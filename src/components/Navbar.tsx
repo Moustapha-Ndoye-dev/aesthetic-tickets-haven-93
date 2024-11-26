@@ -6,16 +6,22 @@ export const Navbar = () => {
   const { user, isOrganizer } = useAuth();
 
   return (
-    <nav className="border-b">
+    <nav className="border-b bg-white shadow-sm">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold">EventTix</Link>
+        <Link to="/" className="text-2xl font-bold text-primary">EventTix</Link>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           {user ? (
             <>
-              <Link to="/my-tickets">Mes Tickets</Link>
-              {isOrganizer && <Link to="/organizer/events">Mes Événements</Link>}
-              <Link to="/settings">Paramètres</Link>
+              {isOrganizer ? (
+                <>
+                  <Link to="/organizer/events" className="hover:text-primary transition-colors">Mes Événements</Link>
+                  <Link to="/my-tickets" className="hover:text-primary transition-colors">Mes Réservations</Link>
+                </>
+              ) : (
+                <Link to="/my-tickets" className="hover:text-primary transition-colors">Mes Tickets</Link>
+              )}
+              <Link to="/settings" className="hover:text-primary transition-colors">Paramètres</Link>
             </>
           ) : (
             <>
