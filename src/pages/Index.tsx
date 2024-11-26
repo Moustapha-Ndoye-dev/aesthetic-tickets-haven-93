@@ -2,6 +2,7 @@ import { Hero } from "@/components/Hero";
 import { EventCard } from "@/components/EventCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { SearchBar } from "@/components/SearchBar";
 
 const events = [
   {
@@ -45,15 +46,46 @@ const events = [
 const Index = () => {
   const [sortBy, setSortBy] = useState("date");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredEvents, setFilteredEvents] = useState(events);
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term.toLowerCase());
+    let filtered = [...events];
+    
+    // Filtrer par terme de recherche
+    if (term) {
+      filtered = filtered.filter(event => 
+        event.title.toLowerCase().includes(term.toLowerCase()) ||
+        event.location.toLowerCase().includes(term.toLowerCase()) ||
+        event.category.toLowerCase().includes(term.toLowerCase())
+      );
+    }
+    
+    // Appliquer le filtre de catégorie
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(event => event.category === selectedCategory);
+    }
+    
+    // Appliquer le tri
+    switch (sortBy) {
+      case "date":
+        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        break;
+      case "price":
+        filtered.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+        break;
+      case "popularity":
+        // Pour l'exemple, on garde l'ordre actuel
+        break;
+    }
+    
+    setFilteredEvents(filtered);
+  };
 
   const handleSort = (value: string) => {
     setSortBy(value);
-    let sorted = [...events];
-    
-    if (selectedCategory !== "all") {
-      sorted = sorted.filter(event => event.category === selectedCategory);
-    }
+    let sorted = [...filteredEvents];
     
     switch (value) {
       case "date":
@@ -74,6 +106,16 @@ const Index = () => {
     setSelectedCategory(category);
     let filtered = [...events];
     
+    // Appliquer le filtre de recherche
+    if (searchTerm) {
+      filtered = filtered.filter(event => 
+        event.title.toLowerCase().includes(searchTerm) ||
+        event.location.toLowerCase().includes(searchTerm) ||
+        event.category.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Appliquer le filtre de catégorie
     if (category !== "all") {
       filtered = filtered.filter(event => event.category === category);
     }
@@ -123,6 +165,9 @@ const Index = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="mb-8">
+            <SearchBar onSearch={handleSearch} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredEvents.map((event) => (

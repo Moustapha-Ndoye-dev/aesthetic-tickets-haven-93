@@ -34,7 +34,6 @@ const MyTickets = () => {
       customerEmail: "jean@example.com",
       date: "2024-06-15",
       token: "unique-token-123",
-      isValid: true,
       location: "Parc des Expositions",
       time: "20:00",
       price: "45€",
@@ -47,13 +46,20 @@ const MyTickets = () => {
       customerEmail: "marie@example.com",
       date: "2024-07-20",
       token: "unique-token-456",
-      isValid: true,
       location: "Zénith",
       time: "21:00",
       price: "35€",
       purchaseDate: "2024-03-16",
     },
   ];
+
+  const isTicketValid = (date: string) => {
+    const eventDate = new Date(date);
+    const today = new Date();
+    // Ajouter un jour à la date de l'événement
+    eventDate.setDate(eventDate.getDate() + 1);
+    return today < eventDate;
+  };
 
   const totalPages = Math.ceil(reservations.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -116,11 +122,11 @@ const MyTickets = () => {
                 <TableCell>{reservation.price}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-sm ${
-                    reservation.isValid 
+                    isTicketValid(reservation.date)
                       ? "bg-green-100 text-green-800" 
                       : "bg-red-100 text-red-800"
                   }`}>
-                    {reservation.isValid ? "Valide" : "Utilisé"}
+                    {isTicketValid(reservation.date) ? "Valide" : "Expiré"}
                   </span>
                 </TableCell>
                 <TableCell>
@@ -129,6 +135,7 @@ const MyTickets = () => {
                     size="sm"
                     onClick={() => downloadTicket(reservation.id)}
                     className="flex items-center gap-2"
+                    disabled={!isTicketValid(reservation.date)}
                   >
                     <Download className="w-4 h-4" />
                     Télécharger
@@ -171,19 +178,21 @@ const MyTickets = () => {
 
       {reservations.map((reservation) => (
         <div key={reservation.id} id={`ticket-${reservation.id}`} className="hidden">
-          <Card className="w-[400px] p-6">
-            <CardHeader>
-              <CardTitle>{reservation.eventName}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4">
-              <QRCodeSVG value={reservation.token} size={200} />
-              <div className="text-center">
-                <p className="font-medium">{reservation.customerName}</p>
-                <p className="text-sm text-gray-500">{reservation.date} à {reservation.time}</p>
-                <p className="text-sm text-gray-500">{reservation.location}</p>
-              </div>
-            </CardContent>
-          </Card>
+          {isTicketValid(reservation.date) && (
+            <Card className="w-[400px] p-6">
+              <CardHeader>
+                <CardTitle>{reservation.eventName}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center gap-4">
+                <QRCodeSVG value={reservation.token} size={200} />
+                <div className="text-center">
+                  <p className="font-medium">{reservation.customerName}</p>
+                  <p className="text-sm text-gray-500">{reservation.date} à {reservation.time}</p>
+                  <p className="text-sm text-gray-500">{reservation.location}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       ))}
     </div>

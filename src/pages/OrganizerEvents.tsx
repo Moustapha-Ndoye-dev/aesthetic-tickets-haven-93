@@ -22,6 +22,7 @@ const OrganizerEvents = () => {
       date: "2024-06-15",
       ticketsSold: 150,
       capacity: 500,
+      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
     },
   ]);
 
@@ -58,7 +59,14 @@ const OrganizerEvents = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {events.map((event) => (
-          <Card key={event.id} className="bg-white">
+          <Card key={event.id} className="bg-white overflow-hidden">
+            <div className="aspect-video relative">
+              <img 
+                src={event.image} 
+                alt={event.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">{event.title}</CardTitle>
             </CardHeader>
