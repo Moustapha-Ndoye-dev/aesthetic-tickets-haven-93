@@ -104,7 +104,7 @@ const Index = () => {
                 <SelectTrigger className="w-[180px] h-12 bg-white border border-gray-200">
                   <SelectValue placeholder="Trier par" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200">
                   <SelectItem value="date">Date</SelectItem>
                   <SelectItem value="price">Prix</SelectItem>
                   <SelectItem value="popularity">Popularité</SelectItem>
@@ -115,7 +115,7 @@ const Index = () => {
                 <SelectTrigger className="w-[180px] h-12 bg-white border border-gray-200">
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200">
                   <SelectItem value="all">Toutes les catégories</SelectItem>
                   <SelectItem value="concert">Concerts</SelectItem>
                   <SelectItem value="festival">Festivals</SelectItem>
