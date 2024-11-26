@@ -1,6 +1,5 @@
 import { Hero } from "@/components/Hero";
 import { EventCard } from "@/components/EventCard";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 
@@ -102,10 +101,10 @@ const Index = () => {
             <h2 className="text-2xl font-bold">Événements à venir</h2>
             <div className="flex gap-4">
               <Select value={sortBy} onValueChange={handleSort}>
-                <SelectTrigger className="w-[180px] bg-white">
+                <SelectTrigger className="w-[180px] bg-white border border-gray-200">
                   <SelectValue placeholder="Trier par" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200">
                   <SelectItem value="date">Date</SelectItem>
                   <SelectItem value="price">Prix</SelectItem>
                   <SelectItem value="popularity">Popularité</SelectItem>
@@ -113,10 +112,10 @@ const Index = () => {
               </Select>
 
               <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-[180px] bg-white">
+                <SelectTrigger className="w-[180px] bg-white border border-gray-200">
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200">
                   <SelectItem value="all">Toutes les catégories</SelectItem>
                   <SelectItem value="concert">Concerts</SelectItem>
                   <SelectItem value="festival">Festivals</SelectItem>
