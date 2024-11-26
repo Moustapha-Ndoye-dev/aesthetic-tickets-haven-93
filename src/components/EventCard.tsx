@@ -1,7 +1,10 @@
 import { Calendar, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "./ui/use-toast";
 
 interface EventCardProps {
+  id: string;
   title: string;
   date: string;
   location: string;
@@ -10,7 +13,15 @@ interface EventCardProps {
   category: string;
 }
 
-export const EventCard = ({ title, date, location, image, price, category }: EventCardProps) => {
+export const EventCard = ({ id, title, date, location, image, price, category }: EventCardProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleReservation = () => {
+    // Rediriger vers la page de l'événement
+    navigate(`/event?id=${id}`);
+  };
+
   return (
     <div className="group rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-all duration-300">
       <div className="aspect-[16/9] overflow-hidden relative">
@@ -38,8 +49,12 @@ export const EventCard = ({ title, date, location, image, price, category }: Eve
           {title}
         </h3>
         <div className="flex items-center justify-between">
-          <p className="font-medium text-primary text-lg">{price}</p>
-          <Button variant="outline" className="group-hover:bg-primary group-hover:text-white transition-colors">
+          <p className="font-medium text-primary text-lg">{price}€</p>
+          <Button 
+            variant="outline" 
+            className="group-hover:bg-primary group-hover:text-white transition-colors"
+            onClick={handleReservation}
+          >
             Réserver
           </Button>
         </div>
