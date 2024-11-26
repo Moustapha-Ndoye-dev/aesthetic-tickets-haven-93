@@ -1,9 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { LogOut } from "lucide-react";
 
 export const Navbar = () => {
-  const { user, isOrganizer } = useAuth();
+  const { user, isOrganizer, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <nav className="border-b bg-white shadow-sm">
@@ -22,6 +29,10 @@ export const Navbar = () => {
                 <Link to="/my-tickets" className="hover:text-primary transition-colors">Mes Tickets</Link>
               )}
               <Link to="/settings" className="hover:text-primary transition-colors">Paramètres</Link>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Déconnexion
+              </Button>
             </>
           ) : (
             <>

@@ -17,6 +17,9 @@ interface AuthState {
 export const useAuth = create<AuthState>((set) => ({
   user: null,
   isOrganizer: false,
-  setUser: (user) => set({ user, isOrganizer: user?.role === "organizer" || user?.role === "admin" }),
+  setUser: (user) => set({ 
+    user, 
+    isOrganizer: user?.role === "organizer" || user?.role === "admin" 
+  }),
   logout: () => set({ user: null, isOrganizer: false }),
 }));

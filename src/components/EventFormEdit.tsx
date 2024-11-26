@@ -9,7 +9,11 @@ interface EventFormEditProps {
   event: {
     id: string;
     title: string;
+    description?: string;
     date: string;
+    time?: string;
+    location?: string;
+    price?: string;
     ticketsSold: number;
     capacity: number;
     image?: string;
@@ -21,11 +25,11 @@ export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     title: event.title,
-    description: "",
+    description: event.description || "",
     date: event.date,
-    time: "12:00",
-    location: "",
-    price: "0",
+    time: event.time || "12:00",
+    location: event.location || "",
+    price: event.price || "0",
     capacity: event.capacity.toString(),
     image: event.image || "",
   });
@@ -93,6 +97,31 @@ export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
             name="time"
             type="time"
             value={formData.time}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium mb-1">Lieu</label>
+          <Input
+            id="location"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="price" className="block text-sm font-medium mb-1">Prix (€)</label>
+          <Input
+            id="price"
+            name="price"
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.price}
             onChange={handleChange}
             required
           />
