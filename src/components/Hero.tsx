@@ -1,6 +1,11 @@
 import { SearchBar } from "./SearchBar";
 
 export const Hero = () => {
+  const handleSearch = (term: string) => {
+    // You can implement additional search logic here if needed
+    console.log("Searching for:", term);
+  };
+
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-[70vh] flex items-center">
       <div className="absolute inset-0">
@@ -20,7 +25,7 @@ export const Hero = () => {
             Concerts, spectacles, festivals et plus encore
           </p>
           <div className="pt-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
           </div>
         </div>
       </div>
