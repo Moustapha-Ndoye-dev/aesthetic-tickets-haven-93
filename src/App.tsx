@@ -3,8 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Navbar } from "./components/Navbar";
 import Index from "./pages/Index";
 import Event from "./pages/Event";
+import MyTickets from "./pages/MyTickets";
+import Settings from "./pages/Settings";
+import OrganizerEvents from "./pages/OrganizerEvents";
 
 const queryClient = new QueryClient();
 
@@ -14,9 +18,13 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Navbar />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/event" element={<Event />} />
+          <Route path="/my-tickets" element={<MyTickets />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/organizer/events" element={<OrganizerEvents />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
