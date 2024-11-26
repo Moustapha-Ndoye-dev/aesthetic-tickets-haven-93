@@ -108,29 +108,29 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
       </div>
 
       <Dialog open={showTicketDialog} onOpenChange={setShowTicketDialog}>
-        <DialogContent className="bg-white">
+        <DialogContent className="bg-white max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle>Votre ticket</DialogTitle>
           </DialogHeader>
-          <div id={`ticket-${id}`} className="bg-white p-6 rounded-lg">
-            <div className="text-center space-y-4">
-              <h3 className="text-xl font-bold">{title}</h3>
+          <div id={`ticket-${id}`} className="p-4">
+            <div className="text-center space-y-3">
+              <h3 className="text-lg font-bold">{title}</h3>
               <div className="flex justify-center">
                 <QRCodeSVG
                   value={`event-${id}-${user?.id}`}
-                  size={200}
+                  size={150}
                   level="H"
                   includeMargin
                 />
               </div>
-              <div className="space-y-2">
-                <p className="text-gray-600">{date}</p>
-                <p className="text-gray-600">{location}</p>
+              <div className="space-y-1">
+                <p className="text-gray-600 text-sm">{date}</p>
+                <p className="text-gray-600 text-sm">{location}</p>
                 <p className="font-medium text-primary">{price}€</p>
               </div>
             </div>
           </div>
-          <Button onClick={downloadTicket} className="w-full mt-4">
+          <Button onClick={downloadTicket} className="w-full mt-2">
             Télécharger le ticket
           </Button>
         </DialogContent>
