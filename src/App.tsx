@@ -9,6 +9,8 @@ import Event from "./pages/Event";
 import MyTickets from "./pages/MyTickets";
 import Settings from "./pages/Settings";
 import OrganizerEvents from "./pages/OrganizerEvents";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/my-tickets" element={<MyTickets />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/organizer/events" element={<OrganizerEvents />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
