@@ -1,31 +1,42 @@
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "./ui/use-toast";
 import { useNavigate } from "react-router-dom";
 
-export const EventForm = () => {
+interface EventFormEditProps {
+  event: {
+    id: string;
+    title: string;
+    date: string;
+    ticketsSold: number;
+    capacity: number;
+  };
+  onClose: () => void;
+}
+
+export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    title: "",
+    title: event.title,
     description: "",
-    date: "",
-    time: "",
+    date: event.date,
+    time: "12:00",
     location: "",
-    price: "",
-    capacity: "",
+    price: "0",
+    capacity: event.capacity.toString(),
     image: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Événement créé",
-      description: "Votre événement a été créé avec succès",
+      title: "Événement modifié",
+      description: "Votre événement a été modifié avec succès",
     });
-    navigate("/organizer/events");
+    onClose();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -84,31 +95,6 @@ export const EventForm = () => {
         </div>
 
         <div>
-          <label htmlFor="location" className="block text-sm font-medium mb-1">Lieu</label>
-          <Input
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="price" className="block text-sm font-medium mb-1">Prix (€)</label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.price}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
           <label htmlFor="capacity" className="block text-sm font-medium mb-1">Capacité</label>
           <Input
             id="capacity"
@@ -120,22 +106,11 @@ export const EventForm = () => {
             required
           />
         </div>
-
-        <div>
-          <label htmlFor="image" className="block text-sm font-medium mb-1">Image URL</label>
-          <Input
-            id="image"
-            name="image"
-            type="url"
-            value={formData.image}
-            onChange={handleChange}
-            required
-          />
-        </div>
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button type="submit">Créer l'événement</Button>
+        <Button type="button" variant="outline" onClick={onClose}>Annuler</Button>
+        <Button type="submit">Modifier</Button>
       </div>
     </form>
   );

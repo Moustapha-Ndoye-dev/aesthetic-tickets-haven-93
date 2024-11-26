@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit, Plus, Trash } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { EventForm } from "@/components/EventForm";
+import { EventFormEdit } from "@/components/EventFormEdit";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -11,8 +11,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const OrganizerEvents = () => {
   const { toast } = useToast();
   const [showEventForm, setShowEventForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [events, setEvents] = useState([
     {
       id: "1",
@@ -22,6 +24,11 @@ const OrganizerEvents = () => {
       capacity: 500,
     },
   ]);
+
+  const handleEdit = (event: any) => {
+    setSelectedEvent(event);
+    setShowEditForm(true);
+  };
 
   const handleDelete = (id: string) => {
     setSelectedEventId(id);
@@ -34,7 +41,6 @@ const OrganizerEvents = () => {
       toast({
         title: "Événement supprimé",
         description: "L'événement a été supprimé avec succès",
-        className: "bg-white border border-gray-200",
       });
       setShowDeleteDialog(false);
     }
@@ -63,7 +69,7 @@ const OrganizerEvents = () => {
                   Tickets vendus: {event.ticketsSold}/{event.capacity}
                 </p>
                 <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>
                     <Edit className="w-4 h-4 mr-1" />
                     Modifier
                   </Button>
@@ -83,8 +89,16 @@ const OrganizerEvents = () => {
       </div>
 
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-3xl mx-4">
           <EventForm />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="sm:max-w-3xl mx-4">
+          {selectedEvent && (
+            <EventFormEdit event={selectedEvent} onClose={() => setShowEditForm(false)} />
+          )}
         </DialogContent>
       </Dialog>
 
