@@ -83,7 +83,7 @@ const OrganizerEvents = () => {
       </div>
 
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           <EventForm />
         </DialogContent>
       </Dialog>
