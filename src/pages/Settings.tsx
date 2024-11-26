@@ -16,7 +16,9 @@ const Settings = () => {
       <Tabs defaultValue="profile">
         <TabsList>
           <TabsTrigger value="profile">Profil</TabsTrigger>
-          <TabsTrigger value="api">API</TabsTrigger>
+          {user?.role === "organizer" && (
+            <TabsTrigger value="api">API</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile">
@@ -43,34 +45,36 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="api">
-          <Card>
-            <CardHeader>
-              <CardTitle>API Token</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Votre Token API</label>
-                <div className="flex gap-2">
-                  <Input value={apiToken} readOnly />
-                  <Button
-                    onClick={() => navigator.clipboard.writeText(apiToken)}
-                    variant="outline"
-                  >
-                    Copier
-                  </Button>
+        {user?.role === "organizer" && (
+          <TabsContent value="api">
+            <Card>
+              <CardHeader>
+                <CardTitle>API Token</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Votre Token API</label>
+                  <div className="flex gap-2">
+                    <Input value={apiToken} readOnly />
+                    <Button
+                      onClick={() => navigator.clipboard.writeText(apiToken)}
+                      variant="outline"
+                    >
+                      Copier
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <h3 className="font-medium mb-2">Documentation API</h3>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p>GET /api/tickets/validate/{"{token}"}</p>
-                  <p>POST /api/tickets/invalidate/{"{token}"}</p>
+                <div>
+                  <h3 className="font-medium mb-2">Documentation API</h3>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p>GET /api/tickets/validate/{"{token}"}</p>
+                    <p>POST /api/tickets/invalidate/{"{token}"}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
