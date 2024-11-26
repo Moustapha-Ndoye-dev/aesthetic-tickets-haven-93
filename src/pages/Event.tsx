@@ -1,8 +1,37 @@
 import { Calendar, MapPin, Share2, Ticket, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Event = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleReservation = (type: 'standard' | 'vip') => {
+    // Vérifier si l'utilisateur est connecté
+    const isLoggedIn = localStorage.getItem('token');
+    
+    if (!isLoggedIn) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour réserver un billet.",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    // Simuler une réservation réussie
+    toast({
+      title: "Réservation confirmée !",
+      description: `Votre billet ${type === 'vip' ? 'VIP' : 'standard'} a été réservé avec succès.`,
+    });
+    
+    // Rediriger vers la page des tickets
+    navigate('/my-tickets');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="h-[50vh] relative overflow-hidden bg-black">
@@ -92,7 +121,10 @@ const Event = () => {
                         <span className="text-primary font-semibold">45€</span>
                       </div>
                       <p className="text-sm text-gray-500 mb-4">Accès à tous les concerts</p>
-                      <Button className="w-full">
+                      <Button 
+                        className="w-full"
+                        onClick={() => handleReservation('standard')}
+                      >
                         <Ticket className="w-4 h-4 mr-2" />
                         Réserver
                       </Button>
@@ -103,7 +135,11 @@ const Event = () => {
                         <span className="text-primary font-semibold">90€</span>
                       </div>
                       <p className="text-sm text-gray-500 mb-4">Accès VIP + Meet & Greet</p>
-                      <Button className="w-full" variant="outline">
+                      <Button 
+                        className="w-full" 
+                        variant="outline"
+                        onClick={() => handleReservation('vip')}
+                      >
                         <Ticket className="w-4 h-4 mr-2" />
                         Réserver
                       </Button>
