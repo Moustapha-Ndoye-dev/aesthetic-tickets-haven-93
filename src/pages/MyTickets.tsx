@@ -11,9 +11,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { useState } from "react";
 
 const MyTickets = () => {
   const { toast } = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const reservations = [
     {
       id: "RES-001",
@@ -42,6 +54,11 @@ const MyTickets = () => {
       purchaseDate: "2024-03-16",
     },
   ];
+
+  const totalPages = Math.ceil(reservations.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentReservations = reservations.slice(startIndex, endIndex);
 
   const downloadTicket = async (ticketId: string) => {
     try {
@@ -89,7 +106,7 @@ const MyTickets = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {reservations.map((reservation) => (
+            {currentReservations.map((reservation) => (
               <TableRow key={reservation.id}>
                 <TableCell className="font-medium">{reservation.id}</TableCell>
                 <TableCell>{reservation.eventName}</TableCell>
@@ -123,7 +140,35 @@ const MyTickets = () => {
         </Table>
       </div>
 
-      {/* Modal pour afficher le QR code lors du téléchargement */}
+      <div className="mt-4">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(i + 1)}
+                  isActive={currentPage === i + 1}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+
       {reservations.map((reservation) => (
         <div key={reservation.id} id={`ticket-${reservation.id}`} className="hidden">
           <Card className="w-[400px] p-6">

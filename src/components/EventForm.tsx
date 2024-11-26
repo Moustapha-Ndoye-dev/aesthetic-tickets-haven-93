@@ -4,6 +4,7 @@ import { Textarea } from "./ui/textarea";
 import { useState } from "react";
 import { useToast } from "./ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { ImageUpload } from "./ImageUpload";
 
 export const EventForm = () => {
   const { toast } = useToast();
@@ -33,9 +34,13 @@ export const EventForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleImageSelect = (imageUrl: string) => {
+    setFormData(prev => ({ ...prev, image: imageUrl }));
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full mx-auto p-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="title" className="block text-sm font-medium mb-1">Titre</label>
           <Input
@@ -47,7 +52,7 @@ export const EventForm = () => {
           />
         </div>
 
-        <div className="col-span-2">
+        <div>
           <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
           <Textarea
             id="description"
@@ -122,15 +127,8 @@ export const EventForm = () => {
         </div>
 
         <div>
-          <label htmlFor="image" className="block text-sm font-medium mb-1">Image URL</label>
-          <Input
-            id="image"
-            name="image"
-            type="url"
-            value={formData.image}
-            onChange={handleChange}
-            required
-          />
+          <label className="block text-sm font-medium mb-1">Image</label>
+          <ImageUpload onImageSelect={handleImageSelect} />
         </div>
       </div>
 

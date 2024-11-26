@@ -1,9 +1,9 @@
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "./ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { ImageUpload } from "./ImageUpload";
 
 interface EventFormEditProps {
   event: {
@@ -12,13 +12,13 @@ interface EventFormEditProps {
     date: string;
     ticketsSold: number;
     capacity: number;
+    image?: string;
   };
   onClose: () => void;
 }
 
 export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: event.title,
     description: "",
@@ -27,7 +27,7 @@ export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
     location: "",
     price: "0",
     capacity: event.capacity.toString(),
-    image: "",
+    image: event.image || "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,9 +44,13 @@ export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleImageSelect = (imageUrl: string) => {
+    setFormData(prev => ({ ...prev, image: imageUrl }));
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full mx-auto p-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="title" className="block text-sm font-medium mb-1">Titre</label>
           <Input
@@ -58,7 +62,7 @@ export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
           />
         </div>
 
-        <div className="col-span-2">
+        <div>
           <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
           <Textarea
             id="description"
@@ -105,6 +109,11 @@ export const EventFormEdit = ({ event, onClose }: EventFormEditProps) => {
             onChange={handleChange}
             required
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Image</label>
+          <ImageUpload onImageSelect={handleImageSelect} defaultImage={formData.image} />
         </div>
       </div>
 

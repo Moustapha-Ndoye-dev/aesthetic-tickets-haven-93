@@ -26,7 +26,7 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
         <Input
           type="text"
           placeholder="Rechercher un événement..."
-          className="w-full pl-12 h-12 text-lg bg-white/90 backdrop-blur-sm border-2 focus:border-primary"
+          className="w-full pl-12 h-12 text-lg bg-white/90 backdrop-blur-sm border-2 focus:border-primary text-black"
           value={searchTerm}
           onChange={handleChange}
         />
