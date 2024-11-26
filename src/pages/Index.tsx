@@ -101,10 +101,10 @@ const Index = () => {
             <h2 className="text-2xl font-bold">Événements à venir</h2>
             <div className="flex gap-4">
               <Select value={sortBy} onValueChange={handleSort}>
-                <SelectTrigger className="w-[180px] bg-white border border-gray-200">
+                <SelectTrigger className="w-[180px] h-12 bg-white border border-gray-200">
                   <SelectValue placeholder="Trier par" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200">
+                <SelectContent>
                   <SelectItem value="date">Date</SelectItem>
                   <SelectItem value="price">Prix</SelectItem>
                   <SelectItem value="popularity">Popularité</SelectItem>
@@ -112,10 +112,10 @@ const Index = () => {
               </Select>
 
               <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-[180px] bg-white border border-gray-200">
+                <SelectTrigger className="w-[180px] h-12 bg-white border border-gray-200">
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200">
+                <SelectContent>
                   <SelectItem value="all">Toutes les catégories</SelectItem>
                   <SelectItem value="concert">Concerts</SelectItem>
                   <SelectItem value="festival">Festivals</SelectItem>

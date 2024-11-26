@@ -6,11 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isOrganizer, setIsOrganizer] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setUser } = useAuth();
@@ -19,26 +21,26 @@ const Register = () => {
     e.preventDefault();
     
     try {
-      // TODO: Implement actual registration logic here
-      // For now, we'll simulate a successful registration
       setUser({
         id: "1",
         email,
         name,
-        role: "user"
+        role: isOrganizer ? "organizer" : "user"
       });
       
       toast({
         title: "Inscription réussie",
         description: "Votre compte a été créé avec succès",
+        className: "bg-white border border-gray-200",
       });
       
-      navigate("/");
+      navigate(isOrganizer ? "/organizer/events" : "/");
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur est survenue lors de l'inscription",
+        className: "bg-white border border-gray-200",
       });
     }
   };
@@ -80,6 +82,14 @@ const Register = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="isOrganizer" 
+                checked={isOrganizer} 
+                onCheckedChange={(checked) => setIsOrganizer(checked as boolean)}
+              />
+              <Label htmlFor="isOrganizer">Je suis un organisateur d'événements</Label>
             </div>
             <Button type="submit" className="w-full">
               S'inscrire
