@@ -25,72 +25,56 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showTicketDialog, setShowTicketDialog] = useState(false);
 
-  const handleReservation = () => {
-    if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour réserver un billet",
-        className: "bg-white border border-gray-200",
-      });
-      navigate("/login");
-      return;
-    }
-
-    setShowConfirmDialog(true);
-  };
-
-  const confirmReservation = () => {
-    setShowConfirmDialog(false);
-    setShowTicketDialog(true);
-    
-    // Simuler la sauvegarde du ticket dans le localStorage
-    const ticket = {
-      id: `TIC-${Math.random().toString(36).substr(2, 9)}`,
-      eventId: id,
-      eventName: title,
-      date,
-      location,
-      price,
-      userId: user?.id,
-      token: `event-${id}-${user?.id}`,
-      isValid: true
-    };
-
-    const existingTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
-    localStorage.setItem('userTickets', JSON.stringify([...existingTickets, ticket]));
-
-    toast({
-      title: "Réservation confirmée",
-      description: "Votre billet a été réservé avec succès",
-      className: "bg-white border border-gray-200",
-    });
-  };
-
-  const downloadTicket = async () => {
+  const generateUniqueToken = async () => {
     try {
-      const ticketElement = document.getElementById(`ticket-${id}`);
-      if (!ticketElement) return;
+      const response = await fetch('/api/admin/tokens/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ eventId: id }),
+      });
 
-      const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(ticketElement);
+      if (!response.ok) throw new Error('Failed to generate token');
+      const { token } = await response.json();
+      return token;
+    } catch (error) {
+      console.error('Error generating token:', error);
+      throw error;
+    }
+  };
+
+  const confirmReservation = async () => {
+    try {
+      const token = await generateUniqueToken();
+      setShowConfirmDialog(false);
+      setShowTicketDialog(true);
       
-      const link = document.createElement('a');
-      link.download = `ticket-${title}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      const ticket = {
+        id: `TIC-${Math.random().toString(36).substr(2, 9)}`,
+        eventId: id,
+        eventName: title,
+        date,
+        location,
+        price,
+        userId: user?.id,
+        token,
+        isValid: true
+      };
+
+      const existingTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
+      localStorage.setItem('userTickets', JSON.stringify([...existingTickets, ticket]));
 
       toast({
-        title: "Ticket téléchargé",
-        description: "Votre ticket a été téléchargé avec succès",
+        title: "Réservation confirmée",
+        description: "Votre billet a été réservé avec succès",
         className: "bg-white border border-gray-200",
       });
-      
-      navigate("/my-tickets");
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de télécharger le ticket",
+        description: "Impossible de générer le ticket",
         className: "bg-white border border-gray-200",
       });
     }
@@ -128,7 +112,7 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
             <Button 
               variant="outline" 
               className="group-hover:bg-primary group-hover:text-white transition-colors"
-              onClick={handleReservation}
+              onClick={confirmReservation}
             >
               Réserver
             </Button>
