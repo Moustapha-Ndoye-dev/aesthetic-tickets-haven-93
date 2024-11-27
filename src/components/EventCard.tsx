@@ -7,7 +7,6 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
-import { generateToken } from "@/api/admin/tokens";
 
 interface EventCardProps {
   id: string;
@@ -28,7 +27,7 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
 
   const confirmReservation = async () => {
     try {
-      const token = generateToken(id);
+      const token = `TKN-${Math.random().toString(36).substr(2, 9)}`;
       setShowConfirmDialog(false);
       setShowTicketDialog(true);
       
