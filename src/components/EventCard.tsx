@@ -2,10 +2,11 @@ import { Calendar, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 
 interface EventCardProps {
   id: string;
@@ -21,6 +22,7 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showTicketDialog, setShowTicketDialog] = useState(false);
 
   const handleReservation = () => {
@@ -34,7 +36,34 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
       return;
     }
 
+    setShowConfirmDialog(true);
+  };
+
+  const confirmReservation = () => {
+    setShowConfirmDialog(false);
     setShowTicketDialog(true);
+    
+    // Simuler la sauvegarde du ticket dans le localStorage
+    const ticket = {
+      id: `TIC-${Math.random().toString(36).substr(2, 9)}`,
+      eventId: id,
+      eventName: title,
+      date,
+      location,
+      price,
+      userId: user?.id,
+      token: `event-${id}-${user?.id}`,
+      isValid: true
+    };
+
+    const existingTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
+    localStorage.setItem('userTickets', JSON.stringify([...existingTickets, ticket]));
+
+    toast({
+      title: "Réservation confirmée",
+      description: "Votre billet a été réservé avec succès",
+      className: "bg-white border border-gray-200",
+    });
   };
 
   const downloadTicket = async () => {
@@ -106,6 +135,23 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la réservation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Voulez-vous confirmer la réservation pour l'événement "{title}" au prix de {price}€ ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmReservation}>
+              Confirmer la réservation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={showTicketDialog} onOpenChange={setShowTicketDialog}>
         <DialogContent className="bg-white max-w-sm mx-auto">

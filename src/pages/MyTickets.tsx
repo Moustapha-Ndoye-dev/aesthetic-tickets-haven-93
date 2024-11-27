@@ -1,39 +1,32 @@
 import { useToast } from "@/components/ui/use-toast";
 import { TicketCard } from "@/components/tickets/TicketCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+
+interface Ticket {
+  id: string;
+  eventId: string;
+  eventName: string;
+  date: string;
+  location: string;
+  price: string;
+  userId: string;
+  token: string;
+  isValid: boolean;
+}
 
 const MyTickets = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [tickets, setTickets] = useState<Ticket[]>([]);
 
-  // Simulation des tickets de l'utilisateur
-  const userTickets = [
-    {
-      id: "TIC-001",
-      eventName: "Festival de Jazz",
-      date: "2024-06-15",
-      location: "Parc des Expositions",
-      time: "20:00",
-      token: "unique-token-123",
-      price: "45€",
-    },
-    {
-      id: "TIC-002",
-      eventName: "Concert Rock",
-      date: "2024-07-20",
-      location: "Zénith",
-      time: "21:00",
-      token: "unique-token-456",
-      price: "35€",
-    },
-  ];
-
-  const isTicketValid = (date: string) => {
-    const eventDate = new Date(date);
-    const today = new Date();
-    eventDate.setDate(eventDate.getDate() + 1);
-    return today < eventDate;
-  };
+  useEffect(() => {
+    if (user) {
+      const storedTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
+      const userTickets = storedTickets.filter((ticket: Ticket) => ticket.userId === user.id);
+      setTickets(userTickets);
+    }
+  }, [user]);
 
   const downloadTicket = async (ticketId: string) => {
     try {
@@ -76,17 +69,23 @@ const MyTickets = () => {
       <h1 className="text-3xl font-bold mb-8">Mes Tickets</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {userTickets.map((ticket) => (
+        {tickets.map((ticket) => (
           <TicketCard
             key={ticket.id}
-            {...ticket}
-            isValid={isTicketValid(ticket.date)}
+            id={ticket.id}
+            eventName={ticket.eventName}
+            date={ticket.date}
+            location={ticket.location}
+            time="20:00"
+            token={ticket.token}
+            price={ticket.price}
+            isValid={ticket.isValid}
             onDownload={downloadTicket}
           />
         ))}
       </div>
 
-      {userTickets.length === 0 && (
+      {tickets.length === 0 && (
         <p className="text-center text-gray-600">
           Vous n'avez pas encore de tickets.
         </p>
