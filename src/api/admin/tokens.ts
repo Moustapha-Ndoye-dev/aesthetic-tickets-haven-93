@@ -16,19 +16,6 @@ export const getTokens = async () => {
   });
 };
 
-// Route POST /api/admin/tokens/generate
-export const generateToken = async (eventId: string) => {
-  const token = `${eventId}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-  const newToken: Token = {
-    token,
-    eventId,
-    isValid: true,
-    createdAt: new Date(),
-  };
-  tokens.push(newToken);
-  return token;
-};
-
 // Route POST /api/admin/tokens/invalidate
 export const invalidateToken = async (token: string) => {
   return new Promise((resolve) => {
@@ -51,11 +38,6 @@ export const api = {
   },
   post: async (url: string, { body }: { body: string }) => {
     const data = JSON.parse(body);
-    
-    if (url === '/api/admin/tokens/generate') {
-      const token = await generateToken(data.eventId);
-      return { json: async () => ({ token }) };
-    }
     
     if (url === '/api/admin/tokens/invalidate') {
       const result = await invalidateToken(data.token);
