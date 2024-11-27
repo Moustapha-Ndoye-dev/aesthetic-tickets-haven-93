@@ -80,6 +80,34 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
     }
   };
 
+  const downloadTicket = async () => {
+    try {
+      const ticket = document.getElementById(`ticket-${id}`);
+      if (!ticket) return;
+
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(ticket);
+      
+      const link = document.createElement('a');
+      link.download = `ticket-${id}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      toast({
+        title: "Ticket téléchargé",
+        description: "Votre ticket a été téléchargé avec succès",
+        className: "bg-white border border-gray-200",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de télécharger le ticket",
+        className: "bg-white border border-gray-200",
+      });
+    }
+  };
+
   return (
     <>
       <div className="group rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-all duration-300">
@@ -112,7 +140,7 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
             <Button 
               variant="outline" 
               className="group-hover:bg-primary group-hover:text-white transition-colors"
-              onClick={confirmReservation}
+              onClick={() => setShowConfirmDialog(true)}
             >
               Réserver
             </Button>
