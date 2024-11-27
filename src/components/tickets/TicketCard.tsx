@@ -22,14 +22,13 @@ export const TicketCard = ({
   location,
   time,
   token,
-  price,
   isValid,
   onDownload,
 }: TicketCardProps) => {
   if (!isValid) return null;
 
   return (
-    <Card className="w-full md:w-[400px] hover:shadow-lg transition-shadow animate-fade-up">
+    <Card className="w-full md:w-[400px] hover:shadow-lg transition-shadow animate-fade-up" id={`ticket-${id}`}>
       <CardHeader>
         <CardTitle className="text-xl font-bold">{eventName}</CardTitle>
       </CardHeader>
@@ -45,7 +44,6 @@ export const TicketCard = ({
         <div className="space-y-2 text-center">
           <p className="font-medium text-lg">{date} à {time}</p>
           <p className="text-gray-600">{location}</p>
-          <p className="text-primary font-semibold text-xl">{price}</p>
         </div>
         <Button 
           className="w-full flex items-center gap-2 justify-center" 
