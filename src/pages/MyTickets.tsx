@@ -1,70 +1,39 @@
-import { QRCodeSVG } from "qrcode.react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useState } from "react";
+import { TicketCard } from "@/components/tickets/TicketCard";
+import { useAuth } from "@/hooks/useAuth";
 
 const MyTickets = () => {
   const { toast } = useToast();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const { user } = useAuth();
 
-  const reservations = [
+  // Simulation des tickets de l'utilisateur
+  const userTickets = [
     {
-      id: "RES-001",
+      id: "TIC-001",
       eventName: "Festival de Jazz",
-      customerName: "Jean Dupont",
-      customerEmail: "jean@example.com",
       date: "2024-06-15",
-      token: "unique-token-123",
       location: "Parc des Expositions",
       time: "20:00",
+      token: "unique-token-123",
       price: "45€",
-      purchaseDate: "2024-03-15",
     },
     {
-      id: "RES-002",
+      id: "TIC-002",
       eventName: "Concert Rock",
-      customerName: "Marie Martin",
-      customerEmail: "marie@example.com",
       date: "2024-07-20",
-      token: "unique-token-456",
       location: "Zénith",
       time: "21:00",
+      token: "unique-token-456",
       price: "35€",
-      purchaseDate: "2024-03-16",
     },
   ];
 
   const isTicketValid = (date: string) => {
     const eventDate = new Date(date);
     const today = new Date();
-    // Ajouter un jour à la date de l'événement
     eventDate.setDate(eventDate.getDate() + 1);
     return today < eventDate;
   };
-
-  const totalPages = Math.ceil(reservations.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentReservations = reservations.slice(startIndex, endIndex);
 
   const downloadTicket = async (ticketId: string) => {
     try {
@@ -84,7 +53,6 @@ const MyTickets = () => {
         description: "Votre ticket a été téléchargé avec succès.",
       });
     } catch (error) {
-      console.error('Erreur lors du téléchargement:', error);
       toast({
         title: "Erreur",
         description: "Impossible de télécharger le ticket.",
@@ -93,108 +61,36 @@ const MyTickets = () => {
     }
   };
 
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-center text-gray-600">
+          Veuillez vous connecter pour voir vos tickets.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Liste des Réservations</h1>
+      <h1 className="text-3xl font-bold mb-8">Mes Tickets</h1>
       
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID Réservation</TableHead>
-              <TableHead>Événement</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Prix</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentReservations.map((reservation) => (
-              <TableRow key={reservation.id}>
-                <TableCell className="font-medium">{reservation.id}</TableCell>
-                <TableCell>{reservation.eventName}</TableCell>
-                <TableCell>{reservation.customerName}</TableCell>
-                <TableCell>{reservation.customerEmail}</TableCell>
-                <TableCell>{reservation.date}</TableCell>
-                <TableCell>{reservation.price}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-sm ${
-                    isTicketValid(reservation.date)
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {isTicketValid(reservation.date) ? "Valide" : "Expiré"}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => downloadTicket(reservation.id)}
-                    className="flex items-center gap-2"
-                    disabled={!isTicketValid(reservation.date)}
-                  >
-                    <Download className="w-4 h-4" />
-                    Télécharger
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {userTickets.map((ticket) => (
+          <TicketCard
+            key={ticket.id}
+            {...ticket}
+            isValid={isTicketValid(ticket.date)}
+            onDownload={downloadTicket}
+          />
+        ))}
       </div>
 
-      <div className="mt-4">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(i + 1)}
-                  isActive={currentPage === i + 1}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-
-      {reservations.map((reservation) => (
-        <div key={reservation.id} id={`ticket-${reservation.id}`} className="hidden">
-          {isTicketValid(reservation.date) && (
-            <Card className="w-[400px] p-6">
-              <CardHeader>
-                <CardTitle>{reservation.eventName}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center gap-4">
-                <QRCodeSVG value={reservation.token} size={200} />
-                <div className="text-center">
-                  <p className="font-medium">{reservation.customerName}</p>
-                  <p className="text-sm text-gray-500">{reservation.date} à {reservation.time}</p>
-                  <p className="text-sm text-gray-500">{reservation.location}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      ))}
+      {userTickets.length === 0 && (
+        <p className="text-center text-gray-600">
+          Vous n'avez pas encore de tickets.
+        </p>
+      )}
     </div>
   );
 };
