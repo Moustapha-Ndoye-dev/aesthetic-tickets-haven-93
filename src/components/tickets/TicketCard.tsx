@@ -2,7 +2,6 @@ import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 
 interface TicketCardProps {
   id: string;
@@ -30,18 +29,23 @@ export const TicketCard = ({
   if (!isValid) return null;
 
   return (
-    <Card className="w-full md:w-[400px] hover:shadow-lg transition-shadow">
+    <Card className="w-full md:w-[400px] hover:shadow-lg transition-shadow animate-fade-up">
       <CardHeader>
-        <CardTitle>{eventName}</CardTitle>
+        <CardTitle className="text-xl font-bold">{eventName}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex justify-center">
-          <QRCodeSVG value={token} size={200} />
+      <CardContent className="space-y-6">
+        <div className="flex justify-center bg-white p-4 rounded-lg shadow-inner">
+          <QRCodeSVG 
+            value={token} 
+            size={200}
+            level="H"
+            includeMargin
+          />
         </div>
-        <div className="text-center space-y-2">
+        <div className="space-y-2 text-center">
           <p className="font-medium text-lg">{date} à {time}</p>
           <p className="text-gray-600">{location}</p>
-          <p className="text-primary font-semibold">{price}</p>
+          <p className="text-primary font-semibold text-xl">{price}</p>
         </div>
         <Button 
           className="w-full flex items-center gap-2 justify-center" 
