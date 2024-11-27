@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
+import { generateToken } from "@/api/admin/tokens";
 
 interface EventCardProps {
   id: string;
@@ -25,28 +26,9 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showTicketDialog, setShowTicketDialog] = useState(false);
 
-  const generateUniqueToken = async () => {
-    try {
-      const response = await fetch('/api/admin/tokens/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ eventId: id }),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate token');
-      const { token } = await response.json();
-      return token;
-    } catch (error) {
-      console.error('Error generating token:', error);
-      throw error;
-    }
-  };
-
   const confirmReservation = async () => {
     try {
-      const token = await generateUniqueToken();
+      const token = generateToken(id);
       setShowConfirmDialog(false);
       setShowTicketDialog(true);
       
