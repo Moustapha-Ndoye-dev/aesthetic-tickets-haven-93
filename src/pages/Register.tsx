@@ -1,65 +1,90 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isOrganizer, setIsOrganizer] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setLoading(true);
+
     try {
-      setUser({
-        id: "1",
+      // 1. Créer l'utilisateur dans Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        name,
-        role: isOrganizer ? "organizer" : "user"
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
       });
-      
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès",
-        className: "bg-white border border-gray-200",
-      });
-      
-      navigate(isOrganizer ? "/organizer/events" : "/");
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // 2. Créer le profil dans la table profiles
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: authData.user.id,
+              email,
+              full_name: fullName,
+              role: 'user',
+            },
+          ]);
+
+        if (profileError) throw profileError;
+
+        toast({
+          title: "Inscription réussie",
+          description: "Vérifiez votre email pour confirmer votre compte",
+        });
+
+        navigate('/login');
+      }
     } catch (error) {
+      console.error('Registration error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur est survenue lors de l'inscription",
-        className: "bg-white border border-gray-200",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-md">
-      <Card>
+    <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[calc(100vh-4rem)]">
+      <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Inscription</CardTitle>
+          <CardTitle>Inscription</CardTitle>
+          <CardDescription>
+            Créez votre compte pour accéder à toutes les fonctionnalités
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nom</Label>
+              <Label htmlFor="fullName">Nom complet</Label>
               <Input
-                id="name"
+                id="fullName"
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 required
               />
             </div>
@@ -83,25 +108,21 @@ const Register = () => {
                 required
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="isOrganizer" 
-                checked={isOrganizer} 
-                onCheckedChange={(checked) => setIsOrganizer(checked as boolean)}
-              />
-              <Label htmlFor="isOrganizer">Je suis un organisateur d'événements</Label>
-            </div>
-            <Button type="submit" className="w-full">
-              S'inscrire
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Inscription en cours..." : "S'inscrire"}
             </Button>
-            <p className="text-center text-sm text-gray-600">
-              Déjà un compte ?{" "}
-              <Link to="/login" className="text-primary hover:underline">
-                Se connecter
-              </Link>
-            </p>
-          </form>
-        </CardContent>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/login")}
+            >
+              Déjà un compte ? Connectez-vous
+            </Button>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   );
