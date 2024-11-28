@@ -23,7 +23,7 @@ const Login = () => {
       setUser({
         id: "1",
         email,
-        name: "John Doe",
+        full_name: "John Doe",
         role: "user"
       });
       

@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 const Settings = () => {
   const { user, logout } = useAuth();
-  const [name, setName] = useState(user?.name || "");
+  const [name, setName] = useState(user?.full_name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [apiToken, setApiToken] = useState("your-api-token-123");
   const navigate = useNavigate();
