@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
@@ -11,6 +12,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<"user" | "organizer">("user");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -18,6 +20,7 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log("Starting registration process...");
 
     try {
       // 1. Créer l'utilisateur dans Auth
@@ -34,6 +37,8 @@ const Register = () => {
       if (authError) throw authError;
 
       if (authData.user) {
+        console.log("Auth user created successfully:", authData.user.id);
+        
         // 2. Créer le profil dans la table profiles
         const { error: profileError } = await supabase
           .from('profiles')
@@ -42,12 +47,13 @@ const Register = () => {
               id: authData.user.id,
               email,
               full_name: fullName,
-              role: 'user',
+              role: role,
             },
           ]);
 
         if (profileError) throw profileError;
 
+        console.log("Profile created successfully");
         toast({
           title: "Inscription réussie",
           description: "Vérifiez votre email pour confirmer votre compte",
@@ -107,6 +113,23 @@ const Register = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Type de compte</Label>
+              <RadioGroup 
+                value={role} 
+                onValueChange={(value) => setRole(value as "user" | "organizer")}
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="user" id="user" />
+                  <Label htmlFor="user">Utilisateur</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="organizer" id="organizer" />
+                  <Label htmlFor="organizer">Organisateur</Label>
+                </div>
+              </RadioGroup>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
