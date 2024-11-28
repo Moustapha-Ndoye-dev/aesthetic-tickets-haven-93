@@ -3,135 +3,65 @@ import { EventCard } from "@/components/EventCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
-
-const events = [
-  {
-    id: "1",
-    title: "Festival de Jazz de Paris",
-    date: "15 Juin 2024",
-    location: "Parc des Expositions",
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-    price: "45",
-    category: "festival"
-  },
-  {
-    id: "2",
-    title: "Concert Rock Alternatif",
-    date: "22 Juin 2024",
-    location: "Zénith",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
-    price: "35",
-    category: "concert"
-  },
-  {
-    id: "3",
-    title: "Spectacle de Danse Contemporaine",
-    date: "1 Juillet 2024",
-    location: "Théâtre Municipal",
-    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-    price: "25",
-    category: "spectacle"
-  },
-  {
-    id: "4",
-    title: "Festival Électro Summer",
-    date: "8 Juillet 2024",
-    location: "Plage du Sud",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-    price: "55",
-    category: "festival"
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { getEvents, type Event } from "@/lib/events";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
   const [sortBy, setSortBy] = useState("date");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredEvents, setFilteredEvents] = useState(events);
+
+  const { data: events = [], isLoading, error } = useQuery({
+    queryKey: ['events'],
+    queryFn: getEvents,
+  });
 
   const handleSearch = (term: string) => {
     setSearchTerm(term.toLowerCase());
-    let filtered = [...events];
-    
-    // Filtrer par terme de recherche
-    if (term) {
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(term.toLowerCase()) ||
-        event.location.toLowerCase().includes(term.toLowerCase()) ||
-        event.category.toLowerCase().includes(term.toLowerCase())
-      );
-    }
-    
-    // Appliquer le filtre de catégorie
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(event => event.category === selectedCategory);
-    }
-    
-    // Appliquer le tri
-    switch (sortBy) {
-      case "date":
-        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        break;
-      case "price":
-        filtered.sort((a, b) => parseInt(a.price) - parseInt(b.price));
-        break;
-      case "popularity":
-        // Pour l'exemple, on garde l'ordre actuel
-        break;
-    }
-    
-    setFilteredEvents(filtered);
   };
 
   const handleSort = (value: string) => {
     setSortBy(value);
-    let sorted = [...filteredEvents];
-    
-    switch (value) {
-      case "date":
-        sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        break;
-      case "price":
-        sorted.sort((a, b) => parseInt(a.price) - parseInt(b.price));
-        break;
-      case "popularity":
-        // Pour l'exemple, on garde l'ordre actuel
-        break;
-    }
-    
-    setFilteredEvents(sorted);
   };
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    let filtered = [...events];
-    
-    // Appliquer le filtre de recherche
-    if (searchTerm) {
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(searchTerm) ||
-        event.location.toLowerCase().includes(searchTerm) ||
-        event.category.toLowerCase().includes(searchTerm)
-      );
-    }
-    
-    // Appliquer le filtre de catégorie
-    if (category !== "all") {
-      filtered = filtered.filter(event => event.category === category);
-    }
-    
-    // Appliquer le tri actuel
+  };
+
+  const filteredEvents = events.filter((event: Event) => {
+    const matchesSearch = searchTerm ? (
+      event.title.toLowerCase().includes(searchTerm) ||
+      event.location.toLowerCase().includes(searchTerm) ||
+      event.category.toLowerCase().includes(searchTerm)
+    ) : true;
+
+    const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  }).sort((a: Event, b: Event) => {
     switch (sortBy) {
       case "date":
-        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        break;
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
       case "price":
-        filtered.sort((a, b) => parseInt(a.price) - parseInt(b.price));
-        break;
+        return parseInt(a.price) - parseInt(b.price);
+      default:
+        return 0;
     }
-    
-    setFilteredEvents(filtered);
-  };
+  });
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Hero />
+        <main className="container mx-auto px-4 py-12">
+          <div className="text-center text-red-600">
+            Une erreur est survenue lors du chargement des événements.
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -170,12 +100,22 @@ const Index = () => {
             <SearchBar onSearch={handleSearch} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredEvents.map((event) => (
-              <EventCard 
-                key={event.id}
-                {...event}
-              />
-            ))}
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="space-y-4">
+                  <Skeleton className="h-[200px] w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))
+            ) : (
+              filteredEvents.map((event: Event) => (
+                <EventCard 
+                  key={event.id}
+                  {...event}
+                />
+              ))
+            )}
           </div>
         </section>
       </main>
