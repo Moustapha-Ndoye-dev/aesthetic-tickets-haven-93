@@ -27,11 +27,6 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
       });
 
       if (authError) throw authError;
@@ -51,7 +46,10 @@ const Register = () => {
             },
           ]);
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          throw profileError;
+        }
 
         console.log("Profile created successfully");
         toast({
@@ -62,7 +60,7 @@ const Register = () => {
         navigate('/login');
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
