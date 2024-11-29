@@ -1,12 +1,12 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -23,18 +23,24 @@ const Register = () => {
     console.log("Starting registration process...");
 
     try {
-      // 1. Créer l'utilisateur dans Auth
+      // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+
+      console.log("Auth user created successfully:", authData.user?.id);
 
       if (authData.user) {
-        console.log("Auth user created successfully:", authData.user.id);
-        
-        // 2. Créer le profil dans la table profiles
+        // 2. Wait a bit to ensure the auth session is established
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // 3. Create the profile
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([
@@ -42,7 +48,7 @@ const Register = () => {
               id: authData.user.id,
               email,
               full_name: fullName,
-              role: role,
+              role,
             },
           ]);
 
@@ -57,6 +63,8 @@ const Register = () => {
           description: "Vérifiez votre email pour confirmer votre compte",
         });
 
+        // 4. Sign out the user so they can confirm their email
+        await supabase.auth.signOut();
         navigate('/login');
       }
     } catch (error) {
@@ -76,12 +84,9 @@ const Register = () => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Inscription</CardTitle>
-          <CardDescription>
-            Créez votre compte pour accéder à toutes les fonctionnalités
-          </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">Nom complet</Label>
               <Input
@@ -129,21 +134,17 @@ const Register = () => {
                 </div>
               </RadioGroup>
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Inscription en cours..." : "S'inscrire"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate("/login")}
-            >
-              Déjà un compte ? Connectez-vous
-            </Button>
-          </CardFooter>
-        </form>
+            <p className="text-center text-sm text-gray-600">
+              Déjà un compte ?{" "}
+              <Link to="/login" className="text-primary hover:underline">
+                Se connecter
+              </Link>
+            </p>
+          </form>
+        </CardContent>
       </Card>
     </div>
   );
