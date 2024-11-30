@@ -44,7 +44,7 @@ const Index = () => {
       case "date":
         return new Date(a.date).getTime() - new Date(b.date).getTime();
       case "price":
-        return parseInt(a.price) - parseInt(b.price);
+        return a.price - b.price;
       default:
         return 0;
     }
@@ -112,7 +112,13 @@ const Index = () => {
               filteredEvents.map((event: Event) => (
                 <EventCard 
                   key={event.id}
-                  {...event}
+                  id={event.id}
+                  title={event.title}
+                  date={event.date}
+                  location={event.location}
+                  image_url={event.image_url}
+                  price={event.price}
+                  category={event.category}
                 />
               ))
             )}

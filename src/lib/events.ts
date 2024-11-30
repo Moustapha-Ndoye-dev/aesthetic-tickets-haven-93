@@ -3,11 +3,16 @@ import { supabase } from './supabase';
 export interface Event {
   id: string;
   title: string;
+  description: string | null;
   date: string;
   location: string;
-  image: string;
-  price: string;
+  image_url: string | null;
+  price: number;
+  capacity: number;
   category: string;
+  organizer_id: string;
+  is_active: boolean;
+  created_at: string;
 }
 
 export const getEvents = async () => {

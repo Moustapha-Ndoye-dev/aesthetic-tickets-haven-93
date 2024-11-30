@@ -2,7 +2,7 @@ import { Calendar, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
@@ -13,12 +13,12 @@ interface EventCardProps {
   title: string;
   date: string;
   location: string;
-  image: string;
-  price: string;
+  image_url: string | null;
+  price: number;
   category: string;
 }
 
-export const EventCard = ({ id, title, date, location, image, price, category }: EventCardProps) => {
+export const EventCard = ({ id, title, date, location, image_url, price, category }: EventCardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -94,7 +94,7 @@ export const EventCard = ({ id, title, date, location, image, price, category }:
       <div className="group rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-all duration-300">
         <div className="aspect-[16/9] overflow-hidden relative">
           <img
-            src={image}
+            src={image_url || '/placeholder.svg'}
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
