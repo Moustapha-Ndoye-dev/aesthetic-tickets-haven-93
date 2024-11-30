@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://cbqhbbkmohabjcyuzhdf.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNicWhiYmttb2hhYmpjeXV6aGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4MDY2MjcsImV4cCI6MjA0ODM4MjYyN30.g4mN8BXRoqIzT_ybsceQI10QFsbNtGWQlUKCe7OBv0M';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from '@/integrations/supabase/client';
 
 export type Profile = {
   id: string;
@@ -36,3 +31,5 @@ export type Ticket = {
   is_valid: boolean;
   invalidated_at: string | null;
 };
+
+export { supabase };

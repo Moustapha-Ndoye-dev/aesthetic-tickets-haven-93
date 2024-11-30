@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -27,6 +27,12 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          }
+        }
       });
 
       if (authError) {
@@ -37,10 +43,7 @@ const Register = () => {
       console.log("Auth user created successfully:", authData.user?.id);
 
       if (authData.user) {
-        // 2. Wait a bit to ensure the auth session is established
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // 3. Create the profile
+        // 2. Create the profile
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([
@@ -63,8 +66,6 @@ const Register = () => {
           description: "Vérifiez votre email pour confirmer votre compte",
         });
 
-        // 4. Sign out the user so they can confirm their email
-        await supabase.auth.signOut();
         navigate('/login');
       }
     } catch (error) {
