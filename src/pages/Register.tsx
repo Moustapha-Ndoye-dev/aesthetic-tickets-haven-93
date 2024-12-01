@@ -23,10 +23,16 @@ const Register = () => {
     console.log("Starting registration process...");
 
     try {
-      // 1. Create auth user
+      // 1. Create auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          }
+        }
       });
 
       if (authError) {
@@ -40,15 +46,22 @@ const Register = () => {
 
       console.log("Auth user created successfully:", authData.user.id);
 
-      // Create the profile
+      // 2. Get the session to ensure we have the proper authentication
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        throw new Error("Could not get session after signup");
+      }
+
+      // 3. Create the profile using the session
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([{
+        .insert({
           id: authData.user.id,
           email,
           full_name: fullName,
           role,
-        }]);
+        });
 
       if (profileError) {
         console.error("Profile creation error:", profileError);
