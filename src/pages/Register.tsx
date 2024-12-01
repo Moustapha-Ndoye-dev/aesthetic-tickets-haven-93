@@ -27,12 +27,6 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: role,
-          }
-        }
       });
 
       if (authError) {
@@ -40,34 +34,38 @@ const Register = () => {
         throw authError;
       }
 
-      console.log("Auth user created successfully:", authData.user?.id);
-
-      if (authData.user) {
-        // 2. Create the profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: authData.user.id,
-              email,
-              full_name: fullName,
-              role,
-            },
-          ]);
-
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          throw profileError;
-        }
-
-        console.log("Profile created successfully");
-        toast({
-          title: "Inscription réussie",
-          description: "Vérifiez votre email pour confirmer votre compte",
-        });
-
-        navigate('/login');
+      if (!authData.user?.id) {
+        throw new Error("No user ID returned from auth signup");
       }
+
+      console.log("Auth user created successfully:", authData.user.id);
+
+      // 2. Create the profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: authData.user.id,
+            email,
+            full_name: fullName,
+            role,
+          }
+        ])
+        .select('id')
+        .single();
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        throw profileError;
+      }
+
+      console.log("Profile created successfully");
+      toast({
+        title: "Inscription réussie",
+        description: "Vérifiez votre email pour confirmer votre compte",
+      });
+
+      navigate('/login');
     } catch (error) {
       console.error("Registration error:", error);
       toast({
