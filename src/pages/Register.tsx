@@ -40,19 +40,24 @@ const Register = () => {
 
       console.log("Auth user created successfully:", authData.user.id);
 
-      // 2. Create the profile
+      // Wait for the session to be established
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error("No session established after signup");
+      }
+
+      // 2. Create the profile using the established session
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([
-          {
-            id: authData.user.id,
-            email,
-            full_name: fullName,
-            role,
-          }
-        ])
-        .select('id')
-        .single();
+        .insert({
+          id: authData.user.id,
+          email,
+          full_name: fullName,
+          role,
+        });
 
       if (profileError) {
         console.error("Profile creation error:", profileError);
