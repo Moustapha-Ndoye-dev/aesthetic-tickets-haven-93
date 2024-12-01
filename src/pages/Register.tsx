@@ -27,12 +27,6 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: role,
-          }
-        }
       });
 
       if (authError) {
@@ -49,12 +43,12 @@ const Register = () => {
       // Create the profile
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
+        .insert([{
           id: authData.user.id,
           email,
           full_name: fullName,
           role,
-        });
+        }]);
 
       if (profileError) {
         console.error("Profile creation error:", profileError);
@@ -67,7 +61,7 @@ const Register = () => {
         description: "Vérifiez votre email pour confirmer votre compte",
       });
 
-      // Sign out the user after registration so they can properly sign in
+      // Sign out the user after registration
       await supabase.auth.signOut();
       navigate('/login');
     } catch (error) {
