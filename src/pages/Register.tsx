@@ -27,6 +27,12 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          }
+        }
       });
 
       if (authError) {
@@ -40,16 +46,7 @@ const Register = () => {
 
       console.log("Auth user created successfully:", authData.user.id);
 
-      // Wait for the session to be established
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error("No session established after signup");
-      }
-
-      // 2. Create the profile using the established session
+      // Create the profile
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -70,6 +67,8 @@ const Register = () => {
         description: "Vérifiez votre email pour confirmer votre compte",
       });
 
+      // Sign out the user after registration so they can properly sign in
+      await supabase.auth.signOut();
       navigate('/login');
     } catch (error) {
       console.error("Registration error:", error);
