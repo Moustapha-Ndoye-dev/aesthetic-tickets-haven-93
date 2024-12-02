@@ -20,10 +20,10 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log("Tentative de connexion...");
+    console.log("Tentative de connexion avec:", { email });
     
     try {
-      // First, attempt to sign in
+      // First, attempt to sign in with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -31,16 +31,17 @@ const Login = () => {
 
       if (authError) {
         console.error("Erreur d'authentification:", authError);
-        throw authError;
+        throw new Error("Email ou mot de passe incorrect");
       }
 
-      if (!authData.user) {
-        throw new Error("Aucun utilisateur trouvé");
+      if (!authData?.user) {
+        console.error("Pas de données utilisateur après connexion");
+        throw new Error("Erreur lors de la connexion");
       }
 
       console.log("Authentification réussie, récupération du profil...");
 
-      // Then fetch the user profile
+      // Then fetch the user profile from our profiles table
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -49,16 +50,18 @@ const Login = () => {
 
       if (profileError) {
         console.error("Erreur de récupération du profil:", profileError);
-        throw profileError;
+        throw new Error("Erreur lors de la récupération du profil");
       }
 
       if (!profileData) {
-        throw new Error("Profil non trouvé");
+        console.error("Profil non trouvé pour l'utilisateur:", authData.user.id);
+        throw new Error("Profil utilisateur non trouvé");
       }
 
-      // Validate and transform the role
+      // Validate the role
       const role = profileData.role as UserRole;
       if (!['user', 'organizer', 'admin'].includes(role)) {
+        console.error("Rôle invalide détecté:", role);
         throw new Error("Rôle utilisateur invalide");
       }
 
@@ -71,9 +74,9 @@ const Login = () => {
         created_at: profileData.created_at,
       };
 
-      setUser(profile);
+      console.log("Profil récupéré avec succès:", { id: profile.id, role: profile.role });
       
-      console.log("Connexion réussie, redirection...");
+      setUser(profile);
       
       toast({
         title: "Connexion réussie",
@@ -82,13 +85,11 @@ const Login = () => {
       
       navigate("/");
     } catch (error: any) {
-      console.error("Erreur de connexion:", error);
+      console.error("Erreur complète:", error);
       toast({
         variant: "destructive",
         title: "Erreur de connexion",
-        description: error.message === "Invalid login credentials" 
-          ? "Email ou mot de passe incorrect"
-          : error.message || "Une erreur est survenue lors de la connexion",
+        description: error.message || "Une erreur est survenue lors de la connexion",
       });
     } finally {
       setLoading(false);
