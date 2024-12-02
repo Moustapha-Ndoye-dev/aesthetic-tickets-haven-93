@@ -7,12 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
+import type { UserRole } from "@/lib/supabase";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"user" | "organizer">("user");
+  const [role, setRole] = useState<UserRole>("user");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -27,6 +28,12 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role
+          }
+        }
       });
 
       if (authError) throw authError;
@@ -37,17 +44,20 @@ const Register = () => {
 
       console.log("Utilisateur créé avec succès:", authData.user.id);
 
-      // 2. Créer le profil
+      // 2. Créer le profil avec le même ID que l'utilisateur auth
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: authData.user.id,
           email,
           full_name: fullName,
-          role,
+          role
         });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Erreur lors de la création du profil:", profileError);
+        throw profileError;
+      }
 
       // 3. Déconnexion pour rediriger vers la page de connexion
       await supabase.auth.signOut();
@@ -112,7 +122,7 @@ const Register = () => {
               <Label>Type de compte</Label>
               <RadioGroup 
                 value={role} 
-                onValueChange={(value) => setRole(value as "user" | "organizer")}
+                onValueChange={(value) => setRole(value as UserRole)}
                 className="flex flex-col space-y-2"
               >
                 <div className="flex items-center space-x-2">
