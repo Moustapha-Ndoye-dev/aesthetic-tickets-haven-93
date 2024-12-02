@@ -24,7 +24,7 @@ const Register = () => {
     console.log("Début de l'inscription...");
 
     try {
-      // 1. Créer l'utilisateur dans auth
+      // 1. Create auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -38,28 +38,30 @@ const Register = () => {
 
       if (authError) throw authError;
 
-      if (!authData.user?.id) {
+      const userId = authData.user?.id;
+      if (!userId) {
         throw new Error("Erreur lors de la création du compte");
       }
 
-      console.log("Utilisateur créé avec succès:", authData.user.id);
+      console.log("Utilisateur créé avec succès:", userId);
 
-      // 2. Créer le profil avec le même ID que l'utilisateur auth
+      // 2. Create profile
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: authData.user.id,
+        .insert([{
+          id: userId,
           email,
           full_name: fullName,
           role
-        });
+        }])
+        .single();
 
       if (profileError) {
         console.error("Erreur lors de la création du profil:", profileError);
         throw profileError;
       }
 
-      // 3. Déconnexion pour rediriger vers la page de connexion
+      // 3. Sign out and redirect to login
       await supabase.auth.signOut();
 
       toast({
