@@ -20,40 +20,24 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log("Starting registration process...");
+    console.log("Début de l'inscription...");
 
     try {
-      // 1. Create auth user with metadata
+      // 1. Créer l'utilisateur dans auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: role,
-          }
-        }
       });
 
-      if (authError) {
-        console.error("Auth error:", authError);
-        throw authError;
-      }
+      if (authError) throw authError;
 
       if (!authData.user?.id) {
-        throw new Error("No user ID returned from auth signup");
+        throw new Error("Erreur lors de la création du compte");
       }
 
-      console.log("Auth user created successfully:", authData.user.id);
+      console.log("Utilisateur créé avec succès:", authData.user.id);
 
-      // 2. Get the session to ensure we have the proper authentication
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        throw new Error("Could not get session after signup");
-      }
-
-      // 3. Create the profile using the session
+      // 2. Créer le profil
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -63,26 +47,23 @@ const Register = () => {
           role,
         });
 
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
-      console.log("Profile created successfully");
+      // 3. Déconnexion pour rediriger vers la page de connexion
+      await supabase.auth.signOut();
+
       toast({
         title: "Inscription réussie",
-        description: "Vérifiez votre email pour confirmer votre compte",
+        description: "Vous pouvez maintenant vous connecter",
       });
 
-      // Sign out the user after registration
-      await supabase.auth.signOut();
       navigate('/login');
-    } catch (error) {
-      console.error("Registration error:", error);
+    } catch (error: any) {
+      console.error("Erreur d'inscription:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'inscription",
+        description: error.message || "Une erreur est survenue lors de l'inscription",
       });
     } finally {
       setLoading(false);

@@ -4,28 +4,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
     try {
-      // TODO: Implement actual login logic here
-      // For now, we'll simulate a successful login
-      setUser({
-        id: "1",
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
-        full_name: "John Doe",
-        role: "user"
+        password,
       });
+
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error("Identifiants incorrects");
+      }
+
+      // Récupérer le profil utilisateur
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      setUser(profile);
       
       toast({
         title: "Connexion réussie",
@@ -33,12 +49,15 @@ const Login = () => {
       });
       
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Erreur de connexion:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Email ou mot de passe incorrect",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,8 +89,8 @@ const Login = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Se connecter
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Connexion..." : "Se connecter"}
             </Button>
             <p className="text-center text-sm text-gray-600">
               Pas encore de compte ?{" "}
