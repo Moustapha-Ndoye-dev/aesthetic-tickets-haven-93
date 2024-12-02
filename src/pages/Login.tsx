@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
+import type { Profile, UserRole } from "@/lib/supabase";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -33,13 +34,28 @@ const Login = () => {
       }
 
       // Récupérer le profil utilisateur
-      const { data: profile, error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authData.user.id)
         .single();
 
       if (profileError) throw profileError;
+
+      // Validate and transform the role
+      const role = profileData.role as UserRole;
+      if (!['user', 'organizer', 'admin'].includes(role)) {
+        throw new Error("Rôle utilisateur invalide");
+      }
+
+      // Create a properly typed profile object
+      const profile: Profile = {
+        id: profileData.id,
+        email: profileData.email,
+        full_name: profileData.full_name,
+        role: role,
+        created_at: profileData.created_at,
+      };
 
       setUser(profile);
       

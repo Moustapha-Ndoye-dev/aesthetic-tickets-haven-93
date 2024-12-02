@@ -1,10 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
 
+export type UserRole = 'user' | 'organizer' | 'admin';
+
 export type Profile = {
   id: string;
   email: string;
   full_name: string;
-  role: 'user' | 'organizer' | 'admin';
+  role: UserRole;
+  created_at?: string;
 };
 
 export type Event = {
