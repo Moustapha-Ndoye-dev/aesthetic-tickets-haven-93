@@ -20,27 +20,41 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log("Tentative de connexion...");
     
     try {
+      // First, attempt to sign in
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (authError) throw authError;
-
-      if (!authData.user) {
-        throw new Error("Identifiants incorrects");
+      if (authError) {
+        console.error("Erreur d'authentification:", authError);
+        throw authError;
       }
 
-      // Récupérer le profil utilisateur
+      if (!authData.user) {
+        throw new Error("Aucun utilisateur trouvé");
+      }
+
+      console.log("Authentification réussie, récupération du profil...");
+
+      // Then fetch the user profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authData.user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Erreur de récupération du profil:", profileError);
+        throw profileError;
+      }
+
+      if (!profileData) {
+        throw new Error("Profil non trouvé");
+      }
 
       // Validate and transform the role
       const role = profileData.role as UserRole;
@@ -59,6 +73,8 @@ const Login = () => {
 
       setUser(profile);
       
+      console.log("Connexion réussie, redirection...");
+      
       toast({
         title: "Connexion réussie",
         description: "Vous êtes maintenant connecté",
@@ -69,8 +85,10 @@ const Login = () => {
       console.error("Erreur de connexion:", error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Email ou mot de passe incorrect",
+        title: "Erreur de connexion",
+        description: error.message === "Invalid login credentials" 
+          ? "Email ou mot de passe incorrect"
+          : error.message || "Une erreur est survenue lors de la connexion",
       });
     } finally {
       setLoading(false);
