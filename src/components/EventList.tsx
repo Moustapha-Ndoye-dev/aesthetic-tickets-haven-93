@@ -6,9 +6,12 @@ interface Event {
   id: string;
   title: string;
   date: string;
-  ticketsSold: number;
   capacity: number;
-  image: string;
+  image_url: string | null;
+  tickets: {
+    id: string;
+    is_valid: boolean;
+  }[];
 }
 
 interface EventListProps {
@@ -18,13 +21,17 @@ interface EventListProps {
 }
 
 export const EventList = ({ events, onEdit, onDelete }: EventListProps) => {
+  const getTicketsSold = (tickets: Event['tickets']) => {
+    return tickets.filter(ticket => ticket.is_valid).length;
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
       {events.map((event) => (
         <Card key={event.id} className="bg-white overflow-hidden">
           <div className="aspect-video relative">
             <img 
-              src={event.image} 
+              src={event.image_url || '/placeholder.svg'} 
               alt={event.title}
               className="w-full h-full object-cover"
             />
@@ -34,9 +41,11 @@ export const EventList = ({ events, onEdit, onDelete }: EventListProps) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">Date: {event.date}</p>
               <p className="text-sm text-gray-600">
-                Tickets vendus: {event.ticketsSold}/{event.capacity}
+                Date: {new Date(event.date).toLocaleDateString()}
+              </p>
+              <p className="text-sm text-gray-600">
+                Tickets vendus: {getTicketsSold(event.tickets)}/{event.capacity}
               </p>
               <div className="flex justify-end gap-2 mt-4">
                 <Button variant="outline" size="sm" onClick={() => onEdit(event)}>

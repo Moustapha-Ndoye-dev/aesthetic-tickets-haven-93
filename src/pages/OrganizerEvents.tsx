@@ -34,8 +34,6 @@ const OrganizerEvents = () => {
           *,
           tickets (
             id,
-            user_id,
-            purchase_date,
             is_valid
           )
         `)
