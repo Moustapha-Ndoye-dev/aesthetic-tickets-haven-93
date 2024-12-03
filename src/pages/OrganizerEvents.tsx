@@ -8,46 +8,96 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { EventList } from "@/components/EventList";
 import { TokenList } from "@/components/TokenList";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const OrganizerEvents = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [showEventForm, setShowEventForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  const [events, setEvents] = useState([
-    {
-      id: "1",
-      title: "Festival de Jazz",
-      date: "2024-06-15",
-      ticketsSold: 150,
-      capacity: 500,
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['organizer-events'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      console.log('Fetching organizer events...');
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          *,
+          tickets (
+            id,
+            user_id,
+            purchase_date,
+            is_valid
+          )
+        `)
+        .eq('organizer_id', user.id);
+
+      if (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+
+      console.log('Events fetched successfully:', data);
+      return data || [];
     },
-  ]);
+    enabled: !!user?.id,
+  });
 
   const handleEdit = (event: any) => {
     setSelectedEvent(event);
     setShowEditForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setSelectedEventId(id);
-    setShowDeleteDialog(true);
-  };
+  const handleDelete = async (id: string) => {
+    if (!user?.id) return;
 
-  const confirmDelete = () => {
-    if (selectedEventId) {
-      setEvents(events.filter(event => event.id !== selectedEventId));
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id)
+        .eq('organizer_id', user.id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
+      
       toast({
         title: "Événement supprimé",
         description: "L'événement a été supprimé avec succès",
+        className: "bg-white border-green-500",
       });
+      
       setShowDeleteDialog(false);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer l'événement",
+        className: "bg-white border-red-500",
+      });
     }
   };
+
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <p className="text-center text-gray-600">
+          Veuillez vous connecter pour accéder à cette page.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -59,11 +109,18 @@ const OrganizerEvents = () => {
         </Button>
       </div>
 
-      <EventList 
-        events={events}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {isLoading ? (
+        <div>Chargement...</div>
+      ) : (
+        <EventList 
+          events={events}
+          onEdit={handleEdit}
+          onDelete={(id) => {
+            setSelectedEventId(id);
+            setShowDeleteDialog(true);
+          }}
+        />
+      )}
 
       <div className="mt-8">
         <TokenList />
@@ -93,7 +150,9 @@ const OrganizerEvents = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Supprimer</AlertDialogAction>
+            <AlertDialogAction onClick={() => selectedEventId && handleDelete(selectedEventId)}>
+              Supprimer
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

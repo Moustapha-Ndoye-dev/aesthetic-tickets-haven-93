@@ -2,11 +2,12 @@ import { Calendar, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventCardProps {
   id: string;
@@ -24,40 +25,56 @@ export const EventCard = ({ id, title, date, location, image_url, price, categor
   const { user } = useAuth();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showTicketDialog, setShowTicketDialog] = useState(false);
+  const [ticketToken, setTicketToken] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   const confirmReservation = async () => {
+    if (!user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour réserver un billet",
+        className: "bg-white border-red-500",
+      });
+      navigate('/login');
+      return;
+    }
+
+    setLoading(true);
     try {
       const token = `TKN-${Math.random().toString(36).substr(2, 9)}`;
+      
+      const { error } = await supabase
+        .from('tickets')
+        .insert([
+          {
+            event_id: id,
+            user_id: user.id,
+            token: token,
+          }
+        ]);
+
+      if (error) throw error;
+
+      setTicketToken(token);
       setShowConfirmDialog(false);
       setShowTicketDialog(true);
       
-      const ticket = {
-        id: `TIC-${Math.random().toString(36).substr(2, 9)}`,
-        eventId: id,
-        eventName: title,
-        date,
-        location,
-        price,
-        userId: user?.id,
-        token,
-        isValid: true
-      };
-
-      const existingTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
-      localStorage.setItem('userTickets', JSON.stringify([...existingTickets, ticket]));
-
       toast({
         title: "Réservation confirmée",
         description: "Votre billet a été réservé avec succès",
-        className: "bg-white border border-gray-200",
+        className: "bg-white border-green-500",
       });
     } catch (error) {
+      console.error('Error creating ticket:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de générer le ticket",
-        className: "bg-white border border-gray-200",
+        description: "Impossible de réserver le billet",
+        className: "bg-white border-red-500",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,14 +94,15 @@ export const EventCard = ({ id, title, date, location, image_url, price, categor
       toast({
         title: "Ticket téléchargé",
         description: "Votre ticket a été téléchargé avec succès",
-        className: "bg-white border border-gray-200",
+        className: "bg-white border-green-500",
       });
     } catch (error) {
+      console.error('Error downloading ticket:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Impossible de télécharger le ticket",
-        className: "bg-white border border-gray-200",
+        className: "bg-white border-red-500",
       });
     }
   };
@@ -106,7 +124,7 @@ export const EventCard = ({ id, title, date, location, image_url, price, categor
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              <span>{date}</span>
+              <span>{new Date(date).toLocaleDateString()}</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
@@ -122,8 +140,9 @@ export const EventCard = ({ id, title, date, location, image_url, price, categor
               variant="outline" 
               className="group-hover:bg-primary group-hover:text-white transition-colors"
               onClick={() => setShowConfirmDialog(true)}
+              disabled={loading}
             >
-              Réserver
+              {loading ? "Réservation..." : "Réserver"}
             </Button>
           </div>
         </div>
@@ -139,8 +158,8 @@ export const EventCard = ({ id, title, date, location, image_url, price, categor
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmReservation}>
-              Confirmer la réservation
+            <AlertDialogAction onClick={confirmReservation} disabled={loading}>
+              {loading ? "Réservation..." : "Confirmer la réservation"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -156,14 +175,14 @@ export const EventCard = ({ id, title, date, location, image_url, price, categor
               <h3 className="text-lg font-bold">{title}</h3>
               <div className="flex justify-center">
                 <QRCodeSVG
-                  value={`event-${id}-${user?.id}`}
+                  value={ticketToken}
                   size={150}
                   level="H"
                   includeMargin
                 />
               </div>
               <div className="space-y-1">
-                <p className="text-gray-600 text-sm">{date}</p>
+                <p className="text-gray-600 text-sm">{new Date(date).toLocaleDateString()}</p>
                 <p className="text-gray-600 text-sm">{location}</p>
                 <p className="font-medium text-primary">{price}€</p>
               </div>

@@ -5,10 +5,16 @@ import { useState } from "react";
 import { useToast } from "./ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ImageUpload } from "./ImageUpload";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const EventForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -17,19 +23,65 @@ export const EventForm = () => {
     location: "",
     price: "",
     capacity: "",
+    category: "concert",
     image: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Événement créé",
-      description: "Votre événement a été créé avec succès",
-    });
-    navigate("/organizer/events");
+    if (!user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous devez être connecté pour créer un événement",
+        className: "bg-white border-red-500",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('events')
+        .insert([
+          {
+            title: formData.title,
+            description: formData.description,
+            date: `${formData.date}T${formData.time}`,
+            location: formData.location,
+            price: parseFloat(formData.price),
+            capacity: parseInt(formData.capacity),
+            category: formData.category,
+            image_url: formData.image,
+            organizer_id: user.id,
+          }
+        ]);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
+      
+      toast({
+        title: "Événement créé",
+        description: "Votre événement a été créé avec succès",
+        className: "bg-white border-green-500",
+      });
+      
+      navigate("/organizer/events");
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de créer l'événement",
+        className: "bg-white border-red-500",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -127,13 +179,31 @@ export const EventForm = () => {
         </div>
 
         <div>
+          <label htmlFor="category" className="block text-sm font-medium mb-1">Catégorie</label>
+          <select
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md px-4 py-2"
+            required
+          >
+            <option value="concert">Concert</option>
+            <option value="festival">Festival</option>
+            <option value="spectacle">Spectacle</option>
+          </select>
+        </div>
+
+        <div>
           <label className="block text-sm font-medium mb-1">Image</label>
           <ImageUpload onImageSelect={handleImageSelect} />
         </div>
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button type="submit">Créer l'événement</Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? "Création..." : "Créer l'événement"}
+        </Button>
       </div>
     </form>
   );

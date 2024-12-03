@@ -4,8 +4,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { useQuery } from "@tanstack/react-query";
-import { getEvents, type Event } from "@/lib/events";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [sortBy, setSortBy] = useState("date");
@@ -14,7 +14,21 @@ const Index = () => {
 
   const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['events'],
-    queryFn: getEvents,
+    queryFn: async () => {
+      console.log('Fetching events from Supabase...');
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+
+      console.log('Events fetched successfully:', data);
+      return data || [];
+    },
   });
 
   const handleSearch = (term: string) => {
@@ -29,7 +43,7 @@ const Index = () => {
     setSelectedCategory(category);
   };
 
-  const filteredEvents = events.filter((event: Event) => {
+  const filteredEvents = events.filter((event: any) => {
     const matchesSearch = searchTerm ? (
       event.title.toLowerCase().includes(searchTerm) ||
       event.location.toLowerCase().includes(searchTerm) ||
@@ -39,7 +53,7 @@ const Index = () => {
     const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
 
     return matchesSearch && matchesCategory;
-  }).sort((a: Event, b: Event) => {
+  }).sort((a: any, b: any) => {
     switch (sortBy) {
       case "date":
         return new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -79,7 +93,6 @@ const Index = () => {
                 <SelectContent className="bg-white border border-gray-200">
                   <SelectItem value="date">Date</SelectItem>
                   <SelectItem value="price">Prix</SelectItem>
-                  <SelectItem value="popularity">Popularité</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -109,7 +122,7 @@ const Index = () => {
                 </div>
               ))
             ) : (
-              filteredEvents.map((event: Event) => (
+              filteredEvents.map((event: any) => (
                 <EventCard 
                   key={event.id}
                   id={event.id}
