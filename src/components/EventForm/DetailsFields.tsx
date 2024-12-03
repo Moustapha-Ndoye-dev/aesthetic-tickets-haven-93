@@ -1,10 +1,14 @@
 import { Input } from "../ui/input";
 import { ImageUpload } from "../ImageUpload";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "../ui/use-toast";
+
+interface Category {
+  name: string;
+}
 
 interface DetailsFieldsProps {
   formData: {
@@ -21,17 +25,28 @@ interface DetailsFieldsProps {
 export const DetailsFields = ({ formData, handleChange, handleImageSelect }: DetailsFieldsProps) => {
   const { toast } = useToast();
   const [newCategory, setNewCategory] = useState("");
-  const [categories, setCategories] = useState<{ name: string }[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showNewCategory, setShowNewCategory] = useState(false);
 
   const fetchCategories = async () => {
-    const { data } = await supabase
-      .from('categories')
-      .select('name');
-    if (data) setCategories(data);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('name');
+      
+      if (error) throw error;
+      if (data) setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les catégories",
+      });
+    }
   };
 
-  useState(() => {
+  useEffect(() => {
     fetchCategories();
   }, []);
 
@@ -54,6 +69,7 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
       setNewCategory("");
       setShowNewCategory(false);
     } catch (error) {
+      console.error('Error adding category:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -140,7 +156,7 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
         >
           <option value="">Sélectionner une catégorie</option>
           {categories.map(cat => (
-            <option key={cat.name} value={cat.name.toLowerCase()}>
+            <option key={cat.name} value={cat.name}>
               {cat.name}
             </option>
           ))}
