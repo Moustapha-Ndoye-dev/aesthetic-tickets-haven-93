@@ -125,13 +125,13 @@ const OrganizerEvents = () => {
       </div>
 
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
-        <DialogContent className="sm:max-w-3xl mx-4">
+        <DialogContent className="max-w-4xl mx-4">
           <EventForm />
         </DialogContent>
       </Dialog>
 
       <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-        <DialogContent className="sm:max-w-3xl mx-4">
+        <DialogContent className="max-w-4xl mx-4">
           {selectedEvent && (
             <EventFormEdit event={selectedEvent} onClose={() => setShowEditForm(false)} />
           )}
@@ -139,7 +139,7 @@ const OrganizerEvents = () => {
       </Dialog>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-md mx-4">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
