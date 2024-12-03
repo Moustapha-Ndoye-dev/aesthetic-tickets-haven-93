@@ -23,7 +23,6 @@ const Login = () => {
     console.log("Tentative de connexion avec:", { email });
     
     try {
-      // First, attempt to sign in with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -31,41 +30,57 @@ const Login = () => {
 
       if (authError) {
         console.error("Erreur d'authentification:", authError);
-        throw new Error("Email ou mot de passe incorrect");
+        toast({
+          variant: "destructive",
+          title: "Erreur de connexion",
+          description: "Email ou mot de passe incorrect",
+          className: "bg-white border-red-500",
+        });
+        return;
       }
 
       if (!authData?.user) {
         console.error("Pas de données utilisateur après connexion");
-        throw new Error("Erreur lors de la connexion");
+        toast({
+          variant: "destructive",
+          title: "Erreur de connexion",
+          description: "Email ou mot de passe incorrect",
+          className: "bg-white border-red-500",
+        });
+        return;
       }
 
       console.log("Authentification réussie, récupération du profil...");
 
-      // Then fetch the user profile from our profiles table
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authData.user.id)
         .maybeSingle();
 
-      if (profileError) {
+      if (profileError || !profileData) {
         console.error("Erreur de récupération du profil:", profileError);
-        throw new Error("Erreur lors de la récupération du profil");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de récupérer votre profil",
+          className: "bg-white border-red-500",
+        });
+        return;
       }
 
-      if (!profileData) {
-        console.error("Profil non trouvé pour l'utilisateur:", authData.user.id);
-        throw new Error("Profil utilisateur non trouvé");
-      }
-
-      // Validate the role
       const role = profileData.role as UserRole;
       if (!['user', 'organizer', 'admin'].includes(role)) {
         console.error("Rôle invalide détecté:", role);
-        throw new Error("Rôle utilisateur invalide");
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Type de compte invalide",
+          className: "bg-white border-red-500",
+        });
+        return;
       }
 
-      // Create a properly typed profile object
       const profile: Profile = {
         id: profileData.id,
         email: profileData.email,
@@ -81,15 +96,23 @@ const Login = () => {
       toast({
         title: "Connexion réussie",
         description: "Vous êtes maintenant connecté",
+        className: "bg-white border-green-500",
       });
       
-      navigate("/");
+      // Redirection basée sur le rôle
+      if (role === 'organizer') {
+        navigate("/organizer/events");
+      } else {
+        navigate("/");
+      }
+
     } catch (error: any) {
       console.error("Erreur complète:", error);
       toast({
         variant: "destructive",
         title: "Erreur de connexion",
-        description: error.message || "Une erreur est survenue lors de la connexion",
+        description: "Une erreur est survenue lors de la connexion",
+        className: "bg-white border-red-500",
       });
     } finally {
       setLoading(false);
