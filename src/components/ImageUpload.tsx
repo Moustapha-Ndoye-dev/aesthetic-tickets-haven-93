@@ -1,6 +1,5 @@
 import { Input } from "./ui/input";
 import { useState } from "react";
-import { Button } from "./ui/button";
 import { Upload } from "lucide-react";
 
 interface ImageUploadProps {
@@ -43,7 +42,7 @@ export const ImageUpload = ({ onImageSelect, defaultImage }: ImageUploadProps) =
         </label>
       </div>
       {previewUrl && (
-        <div className="relative w-full h-32 rounded-lg overflow-hidden">
+        <div className="relative w-full h-24 rounded-lg overflow-hidden">
           <img
             src={previewUrl}
             alt="Preview"
