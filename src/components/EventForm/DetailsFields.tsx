@@ -5,10 +5,9 @@ import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "../ui/use-toast";
+import { Tables } from "@/integrations/supabase/types";
 
-interface Category {
-  name: string;
-}
+type Category = Tables<'categories'>;
 
 interface DetailsFieldsProps {
   formData: {
@@ -32,7 +31,7 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('name');
+        .select('*');
       
       if (error) throw error;
       if (data) setCategories(data);
@@ -156,7 +155,7 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
         >
           <option value="">Sélectionner une catégorie</option>
           {categories.map(cat => (
-            <option key={cat.name} value={cat.name}>
+            <option key={cat.id} value={cat.name}>
               {cat.name}
             </option>
           ))}
