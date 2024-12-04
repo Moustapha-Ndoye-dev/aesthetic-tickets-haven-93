@@ -87,17 +87,19 @@ export const EventForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6 p-6">
-      <BasicInfoFields formData={formData} handleChange={handleChange} />
-      <DetailsFields 
-        formData={formData} 
-        handleChange={handleChange}
-        handleImageSelect={handleImageSelect}
-      />
-      <div className="md:col-span-2 flex justify-end gap-2">
-        <Button type="submit" disabled={loading}>
-          {loading ? "Création..." : "Créer l'événement"}
-        </Button>
+    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto p-4">
+      <div className="space-y-6">
+        <BasicInfoFields formData={formData} handleChange={handleChange} />
+        <DetailsFields 
+          formData={formData} 
+          handleChange={handleChange}
+          handleImageSelect={handleImageSelect}
+        />
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+            {loading ? "Création..." : "Créer l'événement"}
+          </Button>
+        </div>
       </div>
     </form>
   );

@@ -78,7 +78,9 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm">
+      <h2 className="text-lg font-semibold mb-4">Détails de l'événement</h2>
+
       <div>
         <label htmlFor="location" className="block text-sm font-medium mb-1">Lieu</label>
         <Input
@@ -87,34 +89,39 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
           value={formData.location}
           onChange={handleChange}
           required
+          className="w-full"
         />
       </div>
 
-      <div>
-        <label htmlFor="price" className="block text-sm font-medium mb-1">Prix (€)</label>
-        <Input
-          id="price"
-          name="price"
-          type="number"
-          min="0"
-          step="0.01"
-          value={formData.price}
-          onChange={handleChange}
-          required
-        />
-      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="price" className="block text-sm font-medium mb-1">Prix (€)</label>
+          <Input
+            id="price"
+            name="price"
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.price}
+            onChange={handleChange}
+            required
+            className="w-full"
+          />
+        </div>
 
-      <div>
-        <label htmlFor="capacity" className="block text-sm font-medium mb-1">Capacité</label>
-        <Input
-          id="capacity"
-          name="capacity"
-          type="number"
-          min="1"
-          value={formData.capacity}
-          onChange={handleChange}
-          required
-        />
+        <div>
+          <label htmlFor="capacity" className="block text-sm font-medium mb-1">Capacité</label>
+          <Input
+            id="capacity"
+            name="capacity"
+            type="number"
+            min="1"
+            value={formData.capacity}
+            onChange={handleChange}
+            required
+            className="w-full"
+          />
+        </div>
       </div>
 
       <div>
@@ -125,13 +132,14 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
             variant="ghost" 
             size="sm"
             onClick={() => setShowNewCategory(!showNewCategory)}
+            className="text-sm"
           >
             <Plus className="w-4 h-4 mr-1" />
-            Nouvelle catégorie
+            Nouvelle
           </Button>
         </div>
         
-        {showNewCategory ? (
+        {showNewCategory && (
           <div className="flex gap-2 mb-2">
             <Input
               value={newCategory}
@@ -139,11 +147,11 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
               placeholder="Nom de la catégorie"
               className="flex-1"
             />
-            <Button type="button" onClick={handleAddCategory}>
+            <Button type="button" onClick={handleAddCategory} size="sm">
               Ajouter
             </Button>
           </div>
-        ) : null}
+        )}
 
         <select
           id="category"
