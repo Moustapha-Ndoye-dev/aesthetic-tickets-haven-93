@@ -20,19 +20,34 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
   };
 
   return (
-    <form 
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSearch();
-      }}
-      className="relative w-full max-w-2xl mx-auto"
-    >
-      <Button 
-        type="submit"
-        className="absolute right-2 top-1/2 -translate-y-1/2 h-9"
-      >
-        Rechercher
-      </Button>
-    </form>
+    <div className="relative w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-lg">
+      <div className="text-center mb-4">
+        <h2 className="text-xl text-white font-medium">Découvrez des événements incroyables</h2>
+        <p className="text-white/80 mt-2">Concerts, spectacles, festivals et plus encore</p>
+      </div>
+      <div className="flex gap-4 justify-center">
+        <Button 
+          variant="secondary"
+          className="px-6 py-2 bg-white/90 hover:bg-white text-gray-800 font-medium"
+          onClick={() => onSearch("concert")}
+        >
+          Concerts
+        </Button>
+        <Button 
+          variant="secondary"
+          className="px-6 py-2 bg-white/90 hover:bg-white text-gray-800 font-medium"
+          onClick={() => onSearch("festival")}
+        >
+          Festivals
+        </Button>
+        <Button 
+          variant="secondary"
+          className="px-6 py-2 bg-white/90 hover:bg-white text-gray-800 font-medium"
+          onClick={() => onSearch("spectacle")}
+        >
+          Spectacles
+        </Button>
+      </div>
+    </div>
   );
 };
