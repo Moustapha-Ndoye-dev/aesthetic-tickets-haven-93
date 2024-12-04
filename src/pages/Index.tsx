@@ -112,17 +112,19 @@ const Index = () => {
           <div className="mb-8">
             <SearchBar onSearch={handleSearch} />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, index) => (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, index) => (
                 <div key={index} className="space-y-4">
                   <Skeleton className="h-[200px] w-full" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
                 </div>
-              ))
-            ) : (
-              filteredEvents.map((event: any) => (
+              ))}
+            </div>
+          ) : filteredEvents.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredEvents.map((event: any) => (
                 <EventCard 
                   key={event.id}
                   id={event.id}
@@ -133,9 +135,15 @@ const Index = () => {
                   price={event.price}
                   category={event.category}
                 />
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">
+                Aucun événement ne correspond à votre recherche.
+              </p>
+            </div>
+          )}
         </section>
       </main>
     </div>

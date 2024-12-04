@@ -1,32 +1,37 @@
 import { useToast } from "@/components/ui/use-toast";
 import { TicketCard } from "@/components/tickets/TicketCard";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState } from "react";
-
-interface Ticket {
-  id: string;
-  eventId: string;
-  eventName: string;
-  date: string;
-  location: string;
-  price: string;
-  userId: string;
-  token: string;
-  isValid: boolean;
-}
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const MyTickets = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
 
-  useEffect(() => {
-    if (user) {
-      const storedTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
-      const userTickets = storedTickets.filter((ticket: Ticket) => ticket.userId === user.id);
-      setTickets(userTickets);
-    }
-  }, [user]);
+  const { data: tickets = [], isLoading } = useQuery({
+    queryKey: ['my-tickets', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('tickets')
+        .select(`
+          *,
+          event:events (
+            title,
+            date,
+            location,
+            price
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('is_valid', true);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
 
   const downloadTicket = async (ticketId: string) => {
     try {
@@ -68,24 +73,26 @@ const MyTickets = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Mes Tickets</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tickets.map((ticket) => (
-          <TicketCard
-            key={ticket.id}
-            id={ticket.id}
-            eventName={ticket.eventName}
-            date={ticket.date}
-            location={ticket.location}
-            time="20:00"
-            token={ticket.token}
-            price={ticket.price}
-            isValid={ticket.isValid}
-            onDownload={downloadTicket}
-          />
-        ))}
-      </div>
-
-      {tickets.length === 0 && (
+      {isLoading ? (
+        <div className="text-center">Chargement...</div>
+      ) : tickets.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tickets.map((ticket) => (
+            <TicketCard
+              key={ticket.id}
+              id={ticket.id}
+              eventName={ticket.event.title}
+              date={ticket.event.date}
+              location={ticket.event.location}
+              time={new Date(ticket.event.date).toLocaleTimeString()}
+              token={ticket.token}
+              price={ticket.event.price.toString()}
+              isValid={ticket.is_valid}
+              onDownload={downloadTicket}
+            />
+          ))}
+        </div>
+      ) : (
         <p className="text-center text-gray-600">
           Vous n'avez pas encore de tickets.
         </p>
