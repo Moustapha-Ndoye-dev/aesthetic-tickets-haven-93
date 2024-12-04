@@ -6,6 +6,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { CategoryList } from "@/components/CategoryList";
 
 const Index = () => {
   const [sortBy, setSortBy] = useState("date");
@@ -78,13 +79,30 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <Hero />
       
-      <main className="container mx-auto px-4 py-12 space-y-12">
-        <section>
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <h2 className="text-2xl font-bold">Événements à venir</h2>
+      <main className="container mx-auto px-4 py-16">
+        {/* Categories Section */}
+        <section className="mb-20">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+              Explorez par catégorie
+            </h2>
+            <p className="text-gray-600 mt-3">
+              Trouvez l'événement parfait qui correspond à vos intérêts
+            </p>
+          </div>
+          <CategoryList />
+        </section>
+
+        {/* Events Section */}
+        <section className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Événements à venir</h2>
+              <p className="text-gray-600 mt-2">Découvrez nos événements les plus populaires</p>
+            </div>
             <div className="flex gap-4">
               <Select value={sortBy} onValueChange={handleSort}>
                 <SelectTrigger className="w-[180px] h-12 bg-white border border-gray-200">
@@ -109,36 +127,35 @@ const Index = () => {
               </Select>
             </div>
           </div>
-          <div className="mb-8">
-            <SearchBar onSearch={handleSearch} />
-          </div>
+
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {Array.from({ length: 8 }).map((_, index) => (
-                <div key={index} className="space-y-4">
-                  <Skeleton className="h-[200px] w-full" />
+                <div key={index} className="space-y-4 animate-pulse">
+                  <Skeleton className="h-[200px] w-full rounded-xl" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-4 w-1/2" />
                 </div>
               ))}
             </div>
           ) : filteredEvents.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredEvents.map((event: any) => (
-                <EventCard 
-                  key={event.id}
-                  id={event.id}
-                  title={event.title}
-                  date={event.date}
-                  location={event.location}
-                  image_url={event.image_url}
-                  price={event.price}
-                  category={event.category}
-                />
+                <div key={event.id} className="transform hover:scale-105 transition-transform duration-300">
+                  <EventCard 
+                    id={event.id}
+                    title={event.title}
+                    date={event.date}
+                    location={event.location}
+                    image_url={event.image_url}
+                    price={event.price}
+                    category={event.category}
+                  />
+                </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-gray-50 rounded-xl">
               <p className="text-gray-500 text-lg">
                 Aucun événement ne correspond à votre recherche.
               </p>
