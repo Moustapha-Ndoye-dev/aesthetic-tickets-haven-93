@@ -44,22 +44,32 @@ export const EventForm = () => {
       // Combine date and time
       const eventDateTime = `${formData.date}T${formData.time}`;
       
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        date: eventDateTime,
+        location: formData.location,
+        price: parseFloat(formData.price),
+        capacity: parseInt(formData.capacity),
+        category: formData.category,
+        image_url: formData.image,
+        organizer_id: user.id,
+      };
+
+      console.log('Sending event data to Supabase:', eventData);
+      
       const { error } = await supabase
         .from('events')
-        .insert({
-          title: formData.title,
-          description: formData.description,
-          date: eventDateTime,
-          location: formData.location,
-          price: parseFloat(formData.price),
-          capacity: parseInt(formData.capacity),
-          category: formData.category,
-          image_url: formData.image,
-          organizer_id: user.id,
-        });
+        .insert(eventData)
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Event created successfully');
+      
       await queryClient.invalidateQueries({ queryKey: ['events'] });
       await queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
       
