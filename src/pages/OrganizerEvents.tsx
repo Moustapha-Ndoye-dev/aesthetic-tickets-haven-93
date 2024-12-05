@@ -4,7 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { EventForm } from "@/components/EventForm";
 import { EventFormEdit } from "@/components/EventFormEdit";
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { EventList } from "@/components/EventList";
 import { TokenList } from "@/components/TokenList";
@@ -108,7 +108,17 @@ const OrganizerEvents = () => {
       </div>
 
       {isLoading ? (
-        <div>Chargement...</div>
+        <div className="text-center py-8">Chargement...</div>
+      ) : events.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-xl">
+          <p className="text-gray-500 text-lg mb-4">
+            Vous n'avez pas encore créé d'événements.
+          </p>
+          <Button onClick={() => setShowEventForm(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Créer mon premier événement
+          </Button>
+        </div>
       ) : (
         <EventList 
           events={events}
@@ -126,12 +136,14 @@ const OrganizerEvents = () => {
 
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
         <DialogContent className="max-w-4xl mx-4">
+          <DialogTitle>Créer un nouvel événement</DialogTitle>
           <EventForm />
         </DialogContent>
       </Dialog>
 
       <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
         <DialogContent className="max-w-4xl mx-4">
+          <DialogTitle>Modifier l'événement</DialogTitle>
           {selectedEvent && (
             <EventFormEdit event={selectedEvent} onClose={() => setShowEditForm(false)} />
           )}

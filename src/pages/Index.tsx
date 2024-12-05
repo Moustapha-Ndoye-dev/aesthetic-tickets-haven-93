@@ -6,7 +6,6 @@ import { SearchBar } from "@/components/SearchBar";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { CategoryList } from "@/components/CategoryList";
 
 const Index = () => {
   const [sortBy, setSortBy] = useState("date");
@@ -28,6 +27,18 @@ const Index = () => {
       }
 
       console.log('Events fetched successfully:', data);
+      return data || [];
+    },
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*');
+
+      if (error) throw error;
       return data || [];
     },
   });
@@ -82,30 +93,16 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <Hero />
       
-      <main className="container mx-auto px-4 py-16">
-        {/* Categories Section */}
-        <section className="mb-20">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-              Explorez par catégorie
-            </h2>
-            <p className="text-gray-600 mt-3">
-              Trouvez l'événement parfait qui correspond à vos intérêts
-            </p>
-          </div>
-          <CategoryList />
-        </section>
-
-        {/* Events Section */}
-        <section className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+      <main className="container mx-auto px-4 py-8 sm:py-16">
+        <section className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-10 gap-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">Événements à venir</h2>
               <p className="text-gray-600 mt-2">Découvrez nos événements les plus populaires</p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Select value={sortBy} onValueChange={handleSort}>
-                <SelectTrigger className="w-[180px] h-12 bg-white border border-gray-200">
+                <SelectTrigger className="w-full sm:w-[180px] h-10 bg-white border border-gray-200">
                   <SelectValue placeholder="Trier par" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200">
@@ -115,21 +112,23 @@ const Index = () => {
               </Select>
 
               <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-[180px] h-12 bg-white border border-gray-200">
+                <SelectTrigger className="w-full sm:w-[180px] h-10 bg-white border border-gray-200">
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200">
                   <SelectItem value="all">Toutes les catégories</SelectItem>
-                  <SelectItem value="concert">Concerts</SelectItem>
-                  <SelectItem value="festival">Festivals</SelectItem>
-                  <SelectItem value="spectacle">Spectacles</SelectItem>
+                  {categories.map((cat: any) => (
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
               {Array.from({ length: 8 }).map((_, index) => (
                 <div key={index} className="space-y-4 animate-pulse">
                   <Skeleton className="h-[200px] w-full rounded-xl" />
@@ -139,7 +138,7 @@ const Index = () => {
               ))}
             </div>
           ) : filteredEvents.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
               {filteredEvents.map((event: any) => (
                 <div key={event.id} className="transform hover:scale-105 transition-transform duration-300">
                   <EventCard 
