@@ -39,6 +39,7 @@ export const EventForm = () => {
 
     setLoading(true);
     try {
+      console.log('Creating event with data:', formData);
       const { error } = await supabase
         .from('events')
         .insert([
@@ -57,11 +58,13 @@ export const EventForm = () => {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
+      await queryClient.invalidateQueries({ queryKey: ['events'] });
+      await queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
       
       toast({
         title: "Événement créé",
         description: "Votre événement a été créé avec succès",
+        className: "bg-white border-green-500",
       });
       
       navigate("/organizer/events");
@@ -71,6 +74,7 @@ export const EventForm = () => {
         variant: "destructive",
         title: "Erreur",
         description: "Impossible de créer l'événement",
+        className: "bg-white border-red-500",
       });
     } finally {
       setLoading(false);
@@ -87,15 +91,15 @@ export const EventForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto p-4">
-      <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <BasicInfoFields formData={formData} handleChange={handleChange} />
         <DetailsFields 
           formData={formData} 
           handleChange={handleChange}
           handleImageSelect={handleImageSelect}
         />
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="md:col-span-2 flex justify-end gap-2 pt-4">
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? "Création..." : "Créer l'événement"}
           </Button>

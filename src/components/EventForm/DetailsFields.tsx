@@ -81,8 +81,8 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm">
       <h2 className="text-lg font-semibold">Détails de l'événement</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="sm:col-span-2">
+      <div className="space-y-3">
+        <div>
           <label htmlFor="location" className="block text-sm font-medium mb-1">Lieu</label>
           <Input
             id="location"
@@ -94,36 +94,38 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
           />
         </div>
 
-        <div>
-          <label htmlFor="price" className="block text-sm font-medium mb-1">Prix (€)</label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.price}
-            onChange={handleChange}
-            required
-            className="w-full"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="price" className="block text-sm font-medium mb-1">Prix (€)</label>
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.price}
+              onChange={handleChange}
+              required
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="capacity" className="block text-sm font-medium mb-1">Capacité</label>
+            <Input
+              id="capacity"
+              name="capacity"
+              type="number"
+              min="1"
+              value={formData.capacity}
+              onChange={handleChange}
+              required
+              className="w-full"
+            />
+          </div>
         </div>
 
         <div>
-          <label htmlFor="capacity" className="block text-sm font-medium mb-1">Capacité</label>
-          <Input
-            id="capacity"
-            name="capacity"
-            type="number"
-            min="1"
-            value={formData.capacity}
-            onChange={handleChange}
-            required
-            className="w-full"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
           <div className="flex justify-between items-center mb-1">
             <label htmlFor="category" className="block text-sm font-medium">Catégorie</label>
             <Button 
@@ -169,7 +171,7 @@ export const DetailsFields = ({ formData, handleChange, handleImageSelect }: Det
           </select>
         </div>
 
-        <div className="sm:col-span-2">
+        <div>
           <label className="block text-sm font-medium mb-1">Image</label>
           <ImageUpload onImageSelect={handleImageSelect} defaultImage={formData.image} />
         </div>

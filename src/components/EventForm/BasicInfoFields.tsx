@@ -16,8 +16,8 @@ export const BasicInfoFields = ({ formData, handleChange }: BasicInfoFieldsProps
     <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm">
       <h2 className="text-lg font-semibold">Informations de base</h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="sm:col-span-2">
+      <div className="space-y-3">
+        <div>
           <label htmlFor="title" className="block text-sm font-medium mb-1">Titre</label>
           <Input
             id="title"
@@ -29,7 +29,7 @@ export const BasicInfoFields = ({ formData, handleChange }: BasicInfoFieldsProps
           />
         </div>
 
-        <div className="sm:col-span-2">
+        <div>
           <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
           <Textarea
             id="description"
@@ -41,30 +41,32 @@ export const BasicInfoFields = ({ formData, handleChange }: BasicInfoFieldsProps
           />
         </div>
 
-        <div>
-          <label htmlFor="date" className="block text-sm font-medium mb-1">Date</label>
-          <Input
-            id="date"
-            name="date"
-            type="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            className="w-full"
-          />
-        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="date" className="block text-sm font-medium mb-1">Date</label>
+            <Input
+              id="date"
+              name="date"
+              type="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+              className="w-full"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="time" className="block text-sm font-medium mb-1">Heure</label>
-          <Input
-            id="time"
-            name="time"
-            type="time"
-            value={formData.time}
-            onChange={handleChange}
-            required
-            className="w-full"
-          />
+          <div>
+            <label htmlFor="time" className="block text-sm font-medium mb-1">Heure</label>
+            <Input
+              id="time"
+              name="time"
+              type="time"
+              value={formData.time}
+              onChange={handleChange}
+              required
+              className="w-full"
+            />
+          </div>
         </div>
       </div>
     </div>

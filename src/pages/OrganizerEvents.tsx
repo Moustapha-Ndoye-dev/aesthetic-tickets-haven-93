@@ -135,7 +135,7 @@ const OrganizerEvents = () => {
       </div>
 
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
-        <DialogContent className="max-w-4xl mx-4">
+        <DialogContent className="max-w-5xl mx-auto">
           <DialogTitle>Créer un nouvel événement</DialogTitle>
           <EventForm />
         </DialogContent>
