@@ -40,21 +40,23 @@ export const EventForm = () => {
     setLoading(true);
     try {
       console.log('Creating event with data:', formData);
+      
+      // Combine date and time
+      const eventDateTime = `${formData.date}T${formData.time}`;
+      
       const { error } = await supabase
         .from('events')
-        .insert([
-          {
-            title: formData.title,
-            description: formData.description,
-            date: `${formData.date}T${formData.time}`,
-            location: formData.location,
-            price: parseFloat(formData.price),
-            capacity: parseInt(formData.capacity),
-            category: formData.category,
-            image_url: formData.image,
-            organizer_id: user.id,
-          }
-        ]);
+        .insert({
+          title: formData.title,
+          description: formData.description,
+          date: eventDateTime,
+          location: formData.location,
+          price: parseFloat(formData.price),
+          capacity: parseInt(formData.capacity),
+          category: formData.category,
+          image_url: formData.image,
+          organizer_id: user.id,
+        });
 
       if (error) throw error;
 
@@ -92,14 +94,14 @@ export const EventForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-6">
         <BasicInfoFields formData={formData} handleChange={handleChange} />
         <DetailsFields 
           formData={formData} 
           handleChange={handleChange}
           handleImageSelect={handleImageSelect}
         />
-        <div className="md:col-span-2 flex justify-end gap-2 pt-4">
+        <div className="col-span-2 flex justify-end gap-2 pt-4">
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? "Création..." : "Créer l'événement"}
           </Button>
