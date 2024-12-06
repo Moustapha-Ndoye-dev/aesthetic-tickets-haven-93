@@ -44,12 +44,33 @@ export const EventForm = () => {
       // Combine date and time
       const eventDateTime = `${formData.date}T${formData.time}`;
 
-      // Prepare image URL - if it's a data URL, we'll need to handle it differently
-      let imageUrl = formData.image;
-      if (imageUrl.startsWith('data:image')) {
-        // For now, we'll use a placeholder image to avoid the stack depth issue
-        imageUrl = '/placeholder.svg';
-        console.log('Image was too large, using placeholder instead');
+      // Handle image upload
+      let imageUrl = '/placeholder.svg';
+      if (formData.image && formData.image.startsWith('data:image')) {
+        const base64Data = formData.image.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new File([byteArray], 'event-image.jpg', { type: 'image/jpeg' });
+        
+        const fileName = `${crypto.randomUUID()}.jpg`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(fileName);
+        
+        imageUrl = publicUrl;
       }
       
       const eventData = {
@@ -94,7 +115,7 @@ export const EventForm = () => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de créer l'événement. Veuillez réessayer avec une image plus petite ou sans image.",
+        description: "Une erreur est survenue lors de la création de l'événement",
         className: "bg-white border-red-500",
       });
     } finally {
