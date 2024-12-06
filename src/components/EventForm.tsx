@@ -58,22 +58,30 @@ export const EventForm = () => {
           const file = new File([byteArray], 'event-image.jpg', { type: 'image/jpeg' });
           
           const fileName = `${crypto.randomUUID()}.jpg`;
-          const { error: uploadError } = await supabase.storage
+          const { error: uploadError, data: uploadData } = await supabase.storage
             .from('event-images')
             .upload(fileName, file);
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw uploadError;
+          }
 
-          const { data: { publicUrl } } = supabase.storage
-            .from('event-images')
-            .getPublicUrl(fileName);
-          
-          imageUrl = publicUrl;
-          console.log('Image uploaded successfully:', imageUrl);
+          if (uploadData) {
+            const { data } = supabase.storage
+              .from('event-images')
+              .getPublicUrl(fileName);
+            
+            imageUrl = data.publicUrl;
+            console.log('Image uploaded successfully:', imageUrl);
+          }
         } catch (uploadError) {
           console.error('Error uploading image:', uploadError);
-          // Continue with placeholder image if upload fails
-          console.log('Using placeholder image instead');
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Erreur lors du téléchargement de l'image. L'événement sera créé avec une image par défaut.",
+          });
         }
       }
       
@@ -91,14 +99,18 @@ export const EventForm = () => {
 
       console.log('Sending event data to Supabase:', eventData);
       
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('events')
-        .insert(eventData);
+        .insert([eventData]);
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
 
       console.log('Event created successfully');
       
+      // Invalidate queries after successful creation
       await queryClient.invalidateQueries({ queryKey: ['events'] });
       await queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
       
