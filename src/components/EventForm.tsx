@@ -44,41 +44,37 @@ export const EventForm = () => {
       // Handle image upload first
       let imageUrl = '/placeholder.svg';
       if (formData.image && formData.image.startsWith('data:image')) {
-        try {
-          const base64Data = formData.image.split(',')[1];
-          const byteCharacters = atob(base64Data);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const file = new File([byteArray], 'event-image.jpg', { type: 'image/jpeg' });
-          
-          const fileName = `${crypto.randomUUID()}.jpg`;
-          const { error: uploadError } = await supabase.storage
-            .from('event-images')
-            .upload(fileName, file);
+        const base64Data = formData.image.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new File([byteArray], 'event-image.jpg', { type: 'image/jpeg' });
+        
+        const fileName = `${crypto.randomUUID()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(fileName, file);
 
-          if (uploadError) {
-            console.error('Upload error:', uploadError);
-            throw uploadError;
-          }
-
-          const { data } = supabase.storage
-            .from('event-images')
-            .getPublicUrl(fileName);
-          
-          imageUrl = data.publicUrl;
-          console.log('Image uploaded successfully:', imageUrl);
-        } catch (uploadError) {
-          console.error('Error uploading image:', uploadError);
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
           toast({
             variant: "destructive",
             title: "Erreur",
             description: "Erreur lors du téléchargement de l'image",
           });
+          setLoading(false);
           return;
         }
+
+        const { data } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(fileName);
+        
+        imageUrl = data.publicUrl;
+        console.log('Image uploaded successfully:', imageUrl);
       }
       
       // Prepare event data
@@ -100,7 +96,7 @@ export const EventForm = () => {
       // Create event with simplified insert
       const { error: insertError } = await supabase
         .from('events')
-        .insert([eventData]);
+        .insert(eventData);
 
       if (insertError) {
         console.error('Insert error:', insertError);
