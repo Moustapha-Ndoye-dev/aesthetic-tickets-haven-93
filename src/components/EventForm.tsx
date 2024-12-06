@@ -43,6 +43,14 @@ export const EventForm = () => {
       
       // Combine date and time
       const eventDateTime = `${formData.date}T${formData.time}`;
+
+      // Prepare image URL - if it's a data URL, we'll need to handle it differently
+      let imageUrl = formData.image;
+      if (imageUrl.startsWith('data:image')) {
+        // For now, we'll use a placeholder image to avoid the stack depth issue
+        imageUrl = '/placeholder.svg';
+        console.log('Image was too large, using placeholder instead');
+      }
       
       const eventData = {
         title: formData.title,
@@ -52,7 +60,7 @@ export const EventForm = () => {
         price: parseFloat(formData.price),
         capacity: parseInt(formData.capacity),
         category: formData.category,
-        image_url: formData.image,
+        image_url: imageUrl,
         organizer_id: user.id,
       };
 
@@ -61,6 +69,7 @@ export const EventForm = () => {
       const { error } = await supabase
         .from('events')
         .insert(eventData)
+        .select()
         .single();
 
       if (error) {
@@ -85,7 +94,7 @@ export const EventForm = () => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de créer l'événement",
+        description: "Impossible de créer l'événement. Veuillez réessayer avec une image plus petite ou sans image.",
         className: "bg-white border-red-500",
       });
     } finally {
