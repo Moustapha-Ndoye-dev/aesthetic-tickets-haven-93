@@ -47,30 +47,34 @@ export const EventForm = () => {
       // Handle image upload
       let imageUrl = '/placeholder.svg';
       if (formData.image && formData.image.startsWith('data:image')) {
-        const base64Data = formData.image.split(',')[1];
-        const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const file = new File([byteArray], 'event-image.jpg', { type: 'image/jpeg' });
-        
-        const fileName = `${crypto.randomUUID()}.jpg`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('event-images')
-          .upload(fileName, file);
+        try {
+          const base64Data = formData.image.split(',')[1];
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const file = new File([byteArray], 'event-image.jpg', { type: 'image/jpeg' });
+          
+          const fileName = `${crypto.randomUUID()}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from('event-images')
+            .upload(fileName, file);
 
-        if (uploadError) {
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('event-images')
+            .getPublicUrl(fileName);
+          
+          imageUrl = publicUrl;
+          console.log('Image uploaded successfully:', imageUrl);
+        } catch (uploadError) {
           console.error('Error uploading image:', uploadError);
-          throw uploadError;
+          // Continue with placeholder image if upload fails
+          console.log('Using placeholder image instead');
         }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('event-images')
-          .getPublicUrl(fileName);
-        
-        imageUrl = publicUrl;
       }
       
       const eventData = {
@@ -89,14 +93,9 @@ export const EventForm = () => {
       
       const { error } = await supabase
         .from('events')
-        .insert(eventData)
-        .select()
-        .single();
+        .insert(eventData);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log('Event created successfully');
       
