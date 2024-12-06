@@ -41,10 +41,7 @@ export const EventForm = () => {
     try {
       console.log('Creating event with data:', formData);
       
-      // Combine date and time
-      const eventDateTime = `${formData.date}T${formData.time}`;
-
-      // Handle image upload
+      // Handle image upload first
       let imageUrl = '/placeholder.svg';
       if (formData.image && formData.image.startsWith('data:image')) {
         try {
@@ -58,7 +55,7 @@ export const EventForm = () => {
           const file = new File([byteArray], 'event-image.jpg', { type: 'image/jpeg' });
           
           const fileName = `${crypto.randomUUID()}.jpg`;
-          const { error: uploadError, data: uploadData } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('event-images')
             .upload(fileName, file);
 
@@ -67,24 +64,25 @@ export const EventForm = () => {
             throw uploadError;
           }
 
-          if (uploadData) {
-            const { data } = supabase.storage
-              .from('event-images')
-              .getPublicUrl(fileName);
-            
-            imageUrl = data.publicUrl;
-            console.log('Image uploaded successfully:', imageUrl);
-          }
+          const { data } = supabase.storage
+            .from('event-images')
+            .getPublicUrl(fileName);
+          
+          imageUrl = data.publicUrl;
+          console.log('Image uploaded successfully:', imageUrl);
         } catch (uploadError) {
           console.error('Error uploading image:', uploadError);
           toast({
             variant: "destructive",
             title: "Erreur",
-            description: "Erreur lors du téléchargement de l'image. L'événement sera créé avec une image par défaut.",
+            description: "Erreur lors du téléchargement de l'image",
           });
+          return;
         }
       }
       
+      // Prepare event data
+      const eventDateTime = `${formData.date}T${formData.time}`;
       const eventData = {
         title: formData.title,
         description: formData.description,
@@ -99,6 +97,7 @@ export const EventForm = () => {
 
       console.log('Sending event data to Supabase:', eventData);
       
+      // Create event with simplified insert
       const { error: insertError } = await supabase
         .from('events')
         .insert([eventData]);
@@ -108,16 +107,13 @@ export const EventForm = () => {
         throw insertError;
       }
 
-      console.log('Event created successfully');
-      
-      // Invalidate queries after successful creation
+      // Success handling
       await queryClient.invalidateQueries({ queryKey: ['events'] });
       await queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
       
       toast({
-        title: "Événement créé",
-        description: "Votre événement a été créé avec succès",
-        className: "bg-white border-green-500",
+        title: "Succès",
+        description: "L'événement a été créé avec succès",
       });
       
       navigate("/organizer/events");
@@ -127,7 +123,6 @@ export const EventForm = () => {
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur est survenue lors de la création de l'événement",
-        className: "bg-white border-red-500",
       });
     } finally {
       setLoading(false);
